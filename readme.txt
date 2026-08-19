@@ -4,7 +4,7 @@ Tags: media, uploads, audit, cleanup, wp-cli
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -120,6 +120,10 @@ Sites using S3, CDN, or another media-offload plugin require special care. A val
 Real permanent deletion requires `wp gp media-audit --delete --yes`. A real backup-and-remove operation similarly requires `wp gp media-audit --backup-delete --yes`.
 
 == Changelog ==
+
+= 1.0.1 =
+
+* Matched the Settings tab width to the other Media Audit sections.
 
 = 1.0.0 =
 
@@ -310,6 +314,10 @@ Real permanent deletion requires `wp gp media-audit --delete --yes`. A real back
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+
+Makes the Settings tab use the same available width as the other plugin sections.
 
 = 1.0.0 =
 

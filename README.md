@@ -260,6 +260,10 @@ The workflow refuses mismatched versions and existing tags. It creates the `vX.Y
 
 ## Changelog
 
+### 1.0.1
+
+- Matched the Settings tab width to the other Media Audit sections.
+
 ### 1.0.0
 
 - First stable public release of Media Audit.

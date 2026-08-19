@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Media Audit
  * Description: Find files that may be unused in WordPress uploads, spot missing Media Library files, and safely review, quarantine, back up, or delete them.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Author: Vagelis P.
@@ -16,7 +16,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /** Current asset and release version. */
-define( 'MEDIA_AUDIT_VERSION', '1.0.0' );
+define( 'MEDIA_AUDIT_VERSION', '1.0.1' );
 
 /** Absolute plugin bootstrap path. */
 define( 'MEDIA_AUDIT_FILE', __FILE__ );

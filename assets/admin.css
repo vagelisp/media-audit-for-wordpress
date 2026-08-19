@@ -835,10 +835,6 @@
 	color: #b42318;
 }
 
-.media-audit-settings-card {
-	max-width: 900px;
-}
-
 .media-audit-settings-card form > label {
 	display: block;
 	margin: 22px 0;
