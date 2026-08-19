@@ -54,6 +54,12 @@ jobs:
           echo "version=${plugin_version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "archive=media-audit-${plugin_version}.zip" >> "$GITHUB_OUTPUT"
+          echo "notes=.github/release-notes/${plugin_version}.md" >> "$GITHUB_OUTPUT"
+
+          if [[ ! -f ".github/release-notes/${plugin_version}.md" ]]; then
+            echo "Missing release notes: .github/release-notes/${plugin_version}.md" >&2
+            exit 1
+          fi
 
       - name: Build WordPress plugin archive
         shell: bash
@@ -81,6 +87,7 @@ jobs:
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
           RELEASE_VERSION: ${{ steps.version.outputs.version }}
           RELEASE_ARCHIVE: ${{ steps.version.outputs.archive }}
+          RELEASE_NOTES: ${{ steps.version.outputs.notes }}
           IS_PRERELEASE: ${{ inputs.prerelease }}
         shell: bash
         run: |
@@ -96,5 +103,5 @@ jobs:
             "${RELEASE_ARCHIVE}.sha256#SHA-256 checksum" \
             --target "$GITHUB_SHA" \
             --title "Media Audit ${RELEASE_VERSION}" \
-            --generate-notes \
+            --notes-file "$RELEASE_NOTES" \
             "${release_flags[@]}"

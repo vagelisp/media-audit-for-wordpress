@@ -252,11 +252,11 @@ Other viable names:
 The **Create release** GitHub Actions workflow performs the complete release process manually and safely:
 
 1. Update the version in the `media-audit.php` plugin header, `MEDIA_AUDIT_VERSION`, and the `readme.txt` stable tag.
-2. Add the matching changelog entries and merge the changes into the default branch.
+2. Add the matching changelog entries and a user-facing `.github/release-notes/X.Y.Z.md` file, then merge the changes into the default branch.
 3. Open **Actions → Create release → Run workflow**.
 4. Choose whether the release is a prerelease and run it from the commit you want to publish.
 
-The workflow refuses mismatched versions and existing tags. It creates the `vX.Y.Z` tag, packages a clean `media-audit` plugin directory, verifies the ZIP, generates a SHA-256 checksum, and publishes both files in a GitHub Release. GitHub-generated release notes are included automatically.
+The workflow refuses mismatched versions, missing release notes, and existing tags. It creates the `vX.Y.Z` tag, packages a clean `media-audit` plugin directory, verifies the ZIP, generates a SHA-256 checksum, and publishes both files with the curated release notes in a GitHub Release.
 
 ## Changelog
 
