@@ -69,10 +69,11 @@ jobs:
             --exclude='media-audit-*.zip' \
             ./ "$release_root/media-audit/"
 
-          archive="$GITHUB_WORKSPACE/${{ steps.version.outputs.archive }}"
+          archive_name="${{ steps.version.outputs.archive }}"
+          archive="$GITHUB_WORKSPACE/$archive_name"
           ( cd "$release_root" && zip -q -r "$archive" media-audit )
           unzip -t "$archive"
-          sha256sum "$archive" > "${archive}.sha256"
+          ( cd "$GITHUB_WORKSPACE" && sha256sum "$archive_name" > "${archive_name}.sha256" )
 
       - name: Create tag and GitHub release
         env:
