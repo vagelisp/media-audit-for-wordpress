@@ -1,0 +1,6 @@
+.DS_Store
+.idea/
+.vscode/
+media-audit-*.zip
+node_modules/
+vendor/

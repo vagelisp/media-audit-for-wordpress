@@ -1,0 +1,99 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: Mark the GitHub release as a prerelease
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: media-audit-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Tag and publish plugin
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate release version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          plugin_version="$(sed -nE 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*$/\1/p' media-audit.php | head -n 1)"
+          constant_version="$(sed -nE "s/^define\( 'MEDIA_AUDIT_VERSION', '([0-9]+\.[0-9]+\.[0-9]+)' \);$/\1/p" media-audit.php | head -n 1)"
+          stable_version="$(sed -nE 's/^Stable tag:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*$/\1/p' readme.txt | head -n 1)"
+
+          if [[ -z "$plugin_version" ]]; then
+            echo "Could not read the plugin Version header." >&2
+            exit 1
+          fi
+
+          if [[ "$plugin_version" != "$constant_version" || "$plugin_version" != "$stable_version" ]]; then
+            echo "Version mismatch: header=$plugin_version constant=$constant_version stable-tag=$stable_version" >&2
+            exit 1
+          fi
+
+          tag="v${plugin_version}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists. Bump the plugin version before releasing." >&2
+            exit 1
+          fi
+
+          echo "version=${plugin_version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "archive=media-audit-${plugin_version}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Build WordPress plugin archive
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          release_root="$RUNNER_TEMP/media-audit-release"
+          mkdir -p "$release_root/media-audit"
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='media-audit-*.zip' \
+            ./ "$release_root/media-audit/"
+
+          archive="$GITHUB_WORKSPACE/${{ steps.version.outputs.archive }}"
+          ( cd "$release_root" && zip -q -r "$archive" media-audit )
+          unzip -t "$archive"
+          sha256sum "$archive" > "${archive}.sha256"
+
+      - name: Create tag and GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_ARCHIVE: ${{ steps.version.outputs.archive }}
+          IS_PRERELEASE: ${{ inputs.prerelease }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          release_flags=()
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            release_flags+=(--prerelease)
+          fi
+
+          gh release create "$RELEASE_TAG" \
+            "$RELEASE_ARCHIVE#Media Audit ${RELEASE_VERSION}" \
+            "${RELEASE_ARCHIVE}.sha256#SHA-256 checksum" \
+            --target "$GITHUB_SHA" \
+            --title "Media Audit ${RELEASE_VERSION}" \
+            --generate-notes \
+            "${release_flags[@]}"
