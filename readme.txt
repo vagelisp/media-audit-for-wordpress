@@ -124,6 +124,7 @@ Real permanent deletion requires `wp gp media-audit --delete --yes`. A real back
 = 1.0.1 =
 
 * Matched the Settings tab width to the other Media Audit sections.
+* Expanded the How it works guide with scan stages, result meanings, action guidance, and a pre-cleanup checklist.
 
 = 1.0.0 =
 
@@ -317,7 +318,7 @@ Real permanent deletion requires `wp gp media-audit --delete --yes`. A real back
 
 = 1.0.1 =
 
-Makes the Settings tab use the same available width as the other plugin sections.
+Improves dashboard consistency and adds a more useful plain-language guide to scanning and safe cleanup.
 
 = 1.0.0 =
 

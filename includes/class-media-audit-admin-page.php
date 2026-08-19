@@ -309,7 +309,62 @@ class Media_Audit_Admin_Page {
 
 			<section class="media-audit-panel" data-panel="cli"><?php self::render_cli_reference(); ?></section>
 
-			<section class="media-audit-panel" data-panel="help"><div class="media-audit-card media-audit-help"><h2><?php esc_html_e( 'How confidence is built', 'media-audit' ); ?></h2><div class="media-audit-steps"><div><b>1</b><h3><?php esc_html_e( 'Inventory', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Files are collected from the selected uploads scope.', 'media-audit' ); ?></p></div><div><b>2</b><h3><?php esc_html_e( 'Attachment match', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Originals, generated sizes, edited copies, and backup sizes are indexed.', 'media-audit' ); ?></p></div><div><b>3</b><h3><?php esc_html_e( 'Reference search', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Core content, metadata, options, and configured custom tables are searched.', 'media-audit' ); ?></p></div><div><b>4</b><h3><?php esc_html_e( 'Candidate review', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Only files without a detected reference are shown for human review.', 'media-audit' ); ?></p></div></div><div class="notice notice-warning inline"><p><?php esc_html_e( 'Encoded data, external systems, theme files, and hardcoded references can evade detection. Keep backups and prefer quarantine.', 'media-audit' ); ?></p></div></div></section>
+			<section class="media-audit-panel" data-panel="help"><?php self::render_help_guide(); ?></section>
+		</div>
+		<?php
+	}
+
+	/** Render the plain-language scan, result, and cleanup safety guide. */
+	private static function render_help_guide() {
+		?>
+		<div class="media-audit-card media-audit-help">
+			<div class="media-audit-help-heading">
+				<div>
+					<p class="media-audit-eyebrow"><?php esc_html_e( 'GUIDED OVERVIEW', 'media-audit' ); ?></p>
+					<h2><?php esc_html_e( 'How Media Audit builds its findings', 'media-audit' ); ?></h2>
+					<p><?php esc_html_e( 'Media Audit narrows the files in WordPress uploads by checking Media Library metadata and database references. Anything left is a review candidate, not proof that a file is unused.', 'media-audit' ); ?></p>
+				</div>
+				<span class="dashicons dashicons-editor-help" aria-hidden="true"></span>
+			</div>
+
+			<div class="media-audit-steps">
+				<div><b>1</b><h3><?php esc_html_e( 'Choose the scope', 'media-audit' ); ?></h3><p><?php esc_html_e( 'The scan stays inside the WordPress uploads directory, or the uploads subdirectory you enter. Ignore rules and the quarantine directory are excluded.', 'media-audit' ); ?></p></div>
+				<div><b>2</b><h3><?php esc_html_e( 'Inventory files', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Eligible files are counted and basic details such as relative path, size, type, and modified time are collected.', 'media-audit' ); ?></p></div>
+				<div><b>3</b><h3><?php esc_html_e( 'Match the Media Library', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Attachment originals, generated image sizes, edited copies, and recorded backup sizes are indexed. Matches are removed from the candidate list.', 'media-audit' ); ?></p></div>
+				<div><b>4</b><h3><?php esc_html_e( 'Search references', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Unless Fast scan is enabled, remaining paths and URLs are searched in core content, metadata, options, and configured custom tables.', 'media-audit' ); ?></p></div>
+				<div><b>5</b><h3><?php esc_html_e( 'Review candidates', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Files with no detected match are shown as likely stray. Review them before running a dry run, quarantine, backup, or deletion.', 'media-audit' ); ?></p></div>
+			</div>
+
+			<div class="media-audit-help-grid">
+				<section>
+					<h3><?php esc_html_e( 'Understanding the result', 'media-audit' ); ?></h3>
+					<dl class="media-audit-help-definitions">
+						<div><dt><?php esc_html_e( 'Not in attachment metadata', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'The file was not matched to a Media Library record. This appears when Fast scan skips the broader database search.', 'media-audit' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'No attachment/database reference found', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'The full scan found neither a Media Library match nor a textual reference in the database locations that were checked.', 'media-audit' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Partial findings', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'The scan was stopped. Completed batches are preserved, but files not yet processed have not been classified.', 'media-audit' ); ?></dd></div>
+					</dl>
+				</section>
+				<section>
+					<h3><?php esc_html_e( 'Choosing a file action', 'media-audit' ); ?></h3>
+					<dl class="media-audit-help-definitions">
+						<div><dt><?php esc_html_e( 'Move to quarantine', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'Moves files out of their public uploads paths. This is the safest first step because files can be restored from the dashboard.', 'media-audit' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Download ZIP & remove', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'Builds a downloadable ZIP before removing the originals. Keep the archive somewhere safe until the site has been checked.', 'media-audit' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Permanent deletion', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'Removes files without a plugin restore path. Use it only after review and when you already have a reliable site backup.', 'media-audit' ); ?></dd></div>
+					</dl>
+				</section>
+			</div>
+
+			<div class="media-audit-help-checklist">
+				<h3><?php esc_html_e( 'Before removing anything', 'media-audit' ); ?></h3>
+				<ul>
+					<li><?php esc_html_e( 'Review unfamiliar paths and test a small selection first.', 'media-audit' ); ?></li>
+					<li><?php esc_html_e( 'Keep reference revalidation enabled when the site is actively changing.', 'media-audit' ); ?></li>
+					<li><?php esc_html_e( 'Check whether a theme, plugin, CDN, media offload service, or external system uses the files.', 'media-audit' ); ?></li>
+					<li><?php esc_html_e( 'Prefer quarantine and verify important pages before permanent deletion.', 'media-audit' ); ?></li>
+				</ul>
+			</div>
+
+			<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Important:', 'media-audit' ); ?></strong> <?php esc_html_e( 'Encoded data, dynamically constructed URLs, external services, custom database storage, and hardcoded references can evade detection. Findings always require human review.', 'media-audit' ); ?></p></div>
 		</div>
 		<?php
 	}

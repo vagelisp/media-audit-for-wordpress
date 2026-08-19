@@ -263,6 +263,7 @@ The workflow refuses mismatched versions and existing tags. It creates the `vX.Y
 ### 1.0.1
 
 - Matched the Settings tab width to the other Media Audit sections.
+- Expanded the How it works guide with scan stages, result meanings, action guidance, and a pre-cleanup checklist.
 
 ### 1.0.0
 
