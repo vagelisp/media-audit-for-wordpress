@@ -258,6 +258,8 @@ The **Create release** GitHub Actions workflow performs the complete release pro
 
 The workflow refuses mismatched versions, missing release notes, and existing tags. It creates the `vX.Y.Z` tag, packages a clean `media-audit` plugin directory, verifies the ZIP, generates a SHA-256 checksum, and publishes both files with the curated release notes in a GitHub Release.
 
+The repository also includes a WordPress Playground Blueprint at `.wordpress-org/blueprints/blueprint.json`. After the plugin is approved and its WordPress.org SVN repository is available, run **Actions → Sync WordPress.org Playground Blueprint** with a dry run first, then run it again with dry run disabled. Store the SVN credentials as the `SVN_USERNAME` and `SVN_PASSWORD` secrets in the `wordpress-org` environment. The release package excludes `.wordpress-org` because these assets belong in the WordPress.org SVN `assets` directory, not in the plugin ZIP.
+
 ## Changelog
 
 ### 1.0.1
