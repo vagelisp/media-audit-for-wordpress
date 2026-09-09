@@ -34,8 +34,8 @@ jobs:
           BLUEPRINT=".wordpress-org/blueprints/blueprint.json"
           jq empty "${BLUEPRINT}"
           jq -e '."$schema" == "https://playground.wordpress.net/blueprint-schema.json"' "${BLUEPRINT}" >/dev/null
-          jq -e '.landingPage == "/wp-admin/tools.php?page=media-audit"' "${BLUEPRINT}" >/dev/null
-          jq -e '.plugins | any(.slug == "media-audit")' "${BLUEPRINT}" >/dev/null
+          jq -e '.landingPage == "/wp-admin/tools.php?page=upload-sleuth"' "${BLUEPRINT}" >/dev/null
+          jq -e '.plugins | any(.slug == "upload-sleuth")' "${BLUEPRINT}" >/dev/null
 
       - name: Install Subversion client
         timeout-minutes: 5
@@ -64,8 +64,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          SVN_DIR="${RUNNER_TEMP}/media-audit-svn"
-          SVN_URL="https://plugins.svn.wordpress.org/media-audit"
+          SVN_DIR="${RUNNER_TEMP}/upload-sleuth-svn"
+          SVN_URL="https://plugins.svn.wordpress.org/upload-sleuth"
           SOURCE_DIR=".wordpress-org/blueprints"
           TARGET_DIR="${SVN_DIR}/assets/blueprints"
 
@@ -92,4 +92,4 @@ jobs:
             --password "${SVN_PASSWORD}" \
             --non-interactive \
             --no-auth-cache \
-            --message "Add Media Audit Playground preview Blueprint"
+            --message "Add UploadSleuth Playground preview Blueprint"

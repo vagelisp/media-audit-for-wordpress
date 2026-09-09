@@ -1,10 +1,10 @@
-=== Media Audit ===
+=== UploadSleuth – Media Audit & Cleanup ===
 Contributors: eboxnet
 Tags: media, uploads, audit, cleanup, wp-cli
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -12,13 +12,13 @@ Find files that may be unused in WordPress uploads, spot missing Media Library f
 
 == Description ==
 
-Media Audit reconciles files in the uploads directory against WordPress attachment metadata and database references.
+UploadSleuth reconciles files in the uploads directory against WordPress attachment metadata and database references.
 
 Files without a detected reference are shown as likely stray candidates. They are not declared safe to delete. The plugin encourages a review, dry-run, and quarantine workflow before permanent removal.
 
 = Features =
 
-* AJAX-powered dashboard under Tools > Media Audit.
+* AJAX-powered dashboard under Tools > UploadSleuth.
 * Scan summaries including candidate count and potential disk space.
 * Persistent storage-impact statistics for reclaimed space and completed cleanup actions.
 * Search, sorting, bulk selection, and per-user saved results.
@@ -43,9 +43,9 @@ A file can be referenced by an external system, theme or plugin code, encoded da
 
 == Installation ==
 
-1. Upload the `media-audit` directory to `/wp-content/plugins/`.
-2. Activate Media Audit through the Plugins screen.
-3. Open Tools > Media Audit.
+1. Upload the `upload-sleuth` directory to `/wp-content/plugins/`.
+2. Activate UploadSleuth through the Plugins screen.
+3. Open Tools > UploadSleuth.
 4. Configure ignore patterns or custom table checks if needed.
 5. Begin with a narrow subdirectory scan.
 
@@ -63,11 +63,11 @@ Quarantine moves selected files into a timestamped directory below the configure
 
 Yes. The Quarantined files panel lists recoverable files and restores each one to its original uploads path. Restore is blocked rather than overwriting a file that already exists there.
 
-The same panel can permanently delete selected quarantined files or all recoverable quarantined files. Downloadable ZIPs and CLI backup trees are not included in Delete all.
+The same panel can permanently delete selected quarantined files or all recoverable quarantined files. Downloadable backup ZIPs are not included in Delete all.
 
 = What does Download ZIP & remove do? =
 
-In the dashboard it creates one ZIP, verifies every archived entry using its size and SHA-256 hash, and only then removes the originals and starts the ZIP download. WP-CLI `--backup-delete` retains its server-side timestamped backup-tree workflow.
+The dashboard and WP-CLI create one ZIP, verify every archived entry using its size and SHA-256 hash, and only then remove the originals. The dashboard starts an authenticated download; WP-CLI reports the protected server-side archive path.
 
 = Can I preview an action? =
 
@@ -83,11 +83,11 @@ ACF commonly stores values in post, term, user, and options metadata. Those loca
 
 = What is the WP-CLI command? =
 
-Run `wp gp media-audit`. Use `wp help gp media-audit` for all options.
+Run `wp upload-sleuth`. Use `wp help upload-sleuth` for all options.
 
 = How do I inspect older, larger candidates only? =
 
-Use `wp gp media-audit --older-than=90 --min-size=100` to report candidates older than 90 days and at least 100 KB.
+Use `wp upload-sleuth --older-than=90 --min-size=100` to report candidates older than 90 days and at least 100 KB.
 
 = Can the command be used in automation? =
 
@@ -105,30 +105,38 @@ Sites using S3, CDN, or another media-offload plugin require special care. A val
 
 == WP-CLI Examples ==
 
-`wp gp media-audit`
+`wp upload-sleuth`
 
-`wp gp media-audit --uploads-subdir=2025 --format=json`
+`wp upload-sleuth --uploads-subdir=2025 --format=json`
 
-`wp gp media-audit --older-than=90 --min-size=100 --summary-only`
+`wp upload-sleuth --older-than=90 --min-size=100 --summary-only`
 
-`wp gp media-audit --quarantine --dry-run`
+`wp upload-sleuth --quarantine --dry-run`
 
-`wp gp media-audit --delete --dry-run`
+`wp upload-sleuth --delete --dry-run`
 
-`wp gp media-audit --backup-delete --dry-run`
+`wp upload-sleuth --backup-delete --dry-run`
 
-Real permanent deletion requires `wp gp media-audit --delete --yes`. A real backup-and-remove operation similarly requires `wp gp media-audit --backup-delete --yes`.
+Real permanent deletion requires `wp upload-sleuth --delete --yes`. A real backup-and-remove operation similarly requires `wp upload-sleuth --backup-delete --yes`.
 
 == Changelog ==
 
+= 1.0.2 =
+
+* Renamed the plugin to UploadSleuth – Media Audit & Cleanup and changed the public slug, text domain, package, dashboard URL, and WP-CLI command to `upload-sleuth`.
+* Limited quarantine, restore, backup, and delete actions to file types recognised by WordPress; `--all-files` now expands reporting only.
+* Replaced WP-CLI backup trees with verified ZIP archives.
+* Moved runtime storage below `uploads/upload-sleuth`, added direct-access protection files, and stored quarantined files with a non-executable suffix.
+* Blocked symbolic links from quarantine and restore operations.
+
 = 1.0.1 =
 
-* Matched the Settings tab width to the other Media Audit sections.
+* Matched the Settings tab width to the other UploadSleuth sections.
 * Expanded the How it works guide with scan stages, result meanings, action guidance, and a pre-cleanup checklist.
 
 = 1.0.0 =
 
-* First stable public release of Media Audit.
+* First stable public release of UploadSleuth.
 * Added uploads auditing with attachment and database-reference checks.
 * Added stoppable AJAX scans, saved partial results, filtering, sorting, and batched actions.
 * Added quarantine, guarded restoration, verified ZIP backup and removal, and permanent cleanup tools.
@@ -244,7 +252,7 @@ Real permanent deletion requires `wp gp media-audit --delete --yes`. A real back
 = 0.9.1 =
 
 * Isolated ZIP downloads so they cannot move or navigate the admin page.
-* Preserved timestamped Media Audit archive filenames instead of the download endpoint name.
+* Preserved timestamped UploadSleuth archive filenames instead of the download endpoint name.
 
 = 0.9.0 =
 
@@ -288,7 +296,7 @@ Real permanent deletion requires `wp gp media-audit --delete --yes`. A real back
 * Block files that became referenced after the scan.
 * Use WordPress `wp_delete_file()` for standalone-file removal.
 * Added lifecycle hooks for quarantine, backup-and-remove, and deletion.
-* Excluded Media Audit's own settings and transients from reference matching.
+* Excluded UploadSleuth's own settings and transients from reference matching.
 
 = 0.4.0 =
 
@@ -315,6 +323,10 @@ Real permanent deletion requires `wp gp media-audit --delete --yes`. A real back
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+
+Adopts the UploadSleuth name and hardens quarantine, restore, backup, and deletion for WordPress.org directory review.
 
 = 1.0.1 =
 
@@ -422,7 +434,7 @@ Adds last-moment reference validation and WordPress-native standalone-file delet
 
 = 0.4.0 =
 
-Adds the complete WP-CLI reference directly to the Media Audit dashboard.
+Adds the complete WP-CLI reference directly to the UploadSleuth dashboard.
 
 = 0.3.0 =
 

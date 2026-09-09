@@ -1,12 +1,12 @@
-# Media Audit architecture
+# UploadSleuth architecture
 
-This document describes the internal boundaries and invariants that should remain true as Media Audit evolves. User-facing installation and command documentation lives in [`README.md`](../README.md).
+This document describes the internal boundaries and invariants that should remain true as UploadSleuth evolves. User-facing installation and command documentation lives in [`README.md`](../README.md).
 
 ## Components
 
 | Component | Responsibility |
 | --- | --- |
-| `media-audit.php` | Defines release constants, loads classes, registers the single public CLI command, and boots the admin controller. |
+| `upload-sleuth.php` | Defines release constants, loads classes, registers the single public CLI command, and boots the admin controller. |
 | `Media_Audit_Admin_Page` | Owns the Tools screen, settings, authorization, AJAX lifecycle, per-user scan/integrity transients, and validation of client-submitted selections. |
 | `Media_Audit_CLI_Command` | Implements filesystem inventory, attachment indexing, database reference detection, batched job processing, result formatting, revalidation, and file actions. |
 | `assets/admin.js` | Coordinates serial AJAX batches, cancellation, incremental rendering, debounced filtering, client-only sorting, clipboard behavior, and opt-in console diagnostics. |
@@ -100,7 +100,7 @@ The manifest stores counters and metadata while `stray_rows` are split into boun
 
 The browser treats this payload as presentation state. For file actions, submitted paths are intersected with the server-owned saved findings. Arbitrary paths supplied by a client are discarded.
 
-Media Audit's own option and transient prefixes are excluded from option-value reference searches. Saved findings necessarily contain candidate paths; treating those values as usage references would hide candidates on the next scan and block every action during revalidation.
+UploadSleuth's own option and transient prefixes are excluded from option-value reference searches. Saved findings necessarily contain candidate paths; treating those values as usage references would hide candidates on the next scan and block every action during revalidation.
 
 ## File-action safety invariants
 
@@ -113,18 +113,20 @@ These rules must remain true:
 5. A newly referenced file is blocked, even if the earlier scan classified it as stray.
 6. Registered attachments are never removed as raw files. Integrity cleanup only accepts saved missing-original IDs, rechecks local absence, and calls `wp_delete_attachment()`.
 7. Standalone files are removed with `wp_delete_file()`, including its core filter.
-8. Backup-and-remove deletes an original only after destination size and SHA-256 match.
-9. Dry-run never creates, moves, or removes a file.
+8. `--all-files` expands reporting only; every filesystem action rejects files outside the active WordPress MIME map.
+9. Runtime artifacts remain below `uploads/upload-sleuth`, and quarantined filenames receive a non-executable suffix.
+10. Backup-and-remove deletes an original only after the ZIP entry's size and SHA-256 match.
+11. Dry-run never creates, moves, or removes a file.
 
 ### Action behavior
 
 | Action | Behavior |
 | --- | --- |
-| Quarantine | Uses `rename()` to move a standalone file into a timestamped safety tree while preserving its relative path. WordPress has no core quarantine API. |
-| Restore | Moves a quarantined file back to its preserved relative uploads path and refuses to overwrite an existing destination. |
+| Quarantine | Uses `rename()` to move a recognised media file into a timestamped safety tree, preserving its relative path and adding a `.uploadsleuth` suffix. WordPress has no core quarantine API. |
+| Restore | Removes the storage suffix, verifies the original extension against the active WordPress MIME map, and refuses to overwrite an existing destination. |
 | Delete quarantine | Resolves selected/all entries from the server-owned quarantine inventory, excludes backup artifacts, and calls `wp_delete_file()`. |
 | Download ZIP & remove (dashboard) | Creates one ZIP, reads every entry back to verify size and SHA-256, then calls `wp_delete_file()` and issues a user-scoped download URL. |
-| Backup & remove (CLI) | Copies to a unique backup tree, verifies size and SHA-256, then calls `wp_delete_file()` on the original. |
+| Backup & remove (CLI) | Builds one protected ZIP, verifies every entry by size and SHA-256, then calls `wp_delete_file()` on each unchanged original. |
 | Delete | Calls `wp_delete_file()` after optional immediate reference revalidation; revalidation defaults on. |
 | Delete missing attachment record | Calls `wp_delete_attachment($id, true)` after server-finding intersection and an immediate missing-local-original check. |
 

@@ -1,14 +1,14 @@
 <?php
 /**
- * Plugin Name: Media Audit
+ * Plugin Name: UploadSleuth – Media Audit & Cleanup
  * Description: Find files that may be unused in WordPress uploads, spot missing Media Library files, and safely review, quarantine, back up, or delete them.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Author: Vagelis P.
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
- * Text Domain: media-audit
+ * Text Domain: upload-sleuth
  *
  * @package GPMediaAudit
  */
@@ -16,7 +16,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /** Current asset and release version. */
-define( 'MEDIA_AUDIT_VERSION', '1.0.1' );
+define( 'MEDIA_AUDIT_VERSION', '1.0.2' );
 
 /** Absolute plugin bootstrap path. */
 define( 'MEDIA_AUDIT_FILE', __FILE__ );
@@ -40,7 +40,7 @@ function media_audit_register_cli_commands() {
 
 	if ( is_callable( array( 'WP_CLI', 'add_command' ) ) ) {
 		$command = new Media_Audit_CLI_Command();
-		call_user_func( array( 'WP_CLI', 'add_command' ), 'gp media-audit', array( $command, 'media_audit' ) );
+		call_user_func( array( 'WP_CLI', 'add_command' ), 'upload-sleuth', array( $command, 'media_audit' ) );
 	}
 }
 

@@ -1,6 +1,6 @@
-# Media Audit
+# UploadSleuth – Media Audit & Cleanup
 
-Media Audit is a cautious WordPress uploads auditor. It inventories files on disk, removes known Media Library files and their generated variants from consideration, searches WordPress database content for textual references, and presents the remainder as **likely stray candidates**.
+UploadSleuth is a cautious WordPress uploads auditor. It inventories files on disk, removes known Media Library files and their generated variants from consideration, searches WordPress database content for textual references, and presents the remainder as **likely stray candidates**.
 
 It is designed for administrators and developers who need evidence before cleaning an old or bloated `wp-content/uploads` directory.
 
@@ -8,7 +8,7 @@ It is designed for administrators and developers who need evidence before cleani
 
 ## Highlights
 
-- AJAX admin workflow under **Tools → Media Audit**—no page reload during scans or file actions.
+- AJAX admin workflow under **Tools → UploadSleuth**—no page reload during scans or file actions.
 - Batched dashboard scans with live progress, cancellation, and saved partial findings.
 - Separate Media Library integrity checks for missing local originals and generated sizes.
 - Result summary with scanned files, attachment matches, database matches, candidate count, and potential disk space.
@@ -32,9 +32,9 @@ It is designed for administrators and developers who need evidence before cleani
 
 ## Installation
 
-1. Copy the plugin directory to `wp-content/plugins/media-audit`.
-2. Activate **Media Audit** in WordPress.
-3. Open **Tools → Media Audit**.
+1. Copy the plugin directory to `wp-content/plugins/upload-sleuth`.
+2. Activate **UploadSleuth** in WordPress.
+3. Open **Tools → UploadSleuth**.
 4. Save any ignore or custom-table settings before the first broad scan.
 
 ## Recommended workflow
@@ -56,7 +56,7 @@ The plugin deliberately labels results as candidates. References can live in enc
 
 - **Uploads subdirectory:** Restricts inventory to a path relative to the uploads root.
 - **Database check limit:** Stops database checks after a fixed number of candidates. `0` means unlimited. A limited scan is incomplete and is marked as such.
-- **Include non-media files:** Includes extensions not registered in the WordPress MIME map.
+- **Include non-media files:** Reports extensions not registered in the WordPress MIME map. Quarantine, restore, backup, and deletion still reject them.
 - **Fast scan:** Skips database text searches. This is faster but produces lower-confidence candidates.
 
 Dashboard reference checks use a configurable batch size of 25 by default. **Stop scan** preserves findings through the latest completed batch and marks them as partial. Partial results never imply that the remaining candidates are clean; they simply have not been classified yet. Saved partial rows can still be reviewed or used with dry-run and quarantine. Last-moment reference validation remains enabled by default and can be disabled in advanced settings when an administrator explicitly accepts the additional risk.
@@ -74,19 +74,19 @@ Dashboard reference checks use a configurable batch size of 25 by default. **Sto
 - **Ignore patterns:** One glob per line. Examples: `cache/*`, `tmp/`, or `*.webp`.
 - **Custom table checks:** Comma-separated `table:column` pairs. The current WordPress prefix can be omitted.
 - **Scan all non-core tables:** Detects and searches text-like columns in other tables. This can be expensive.
-- **Quarantine directory:** Relative to uploads. It defaults to `.media-audit-quarantine` and is automatically excluded from future audits.
+- **Quarantine directory:** Stored below the dedicated `uploads/upload-sleuth` directory and automatically excluded from future audits.
 
 ### File actions
 
 - **Dry run:** Opt-in preview that reports the planned action without touching files.
 - **Quarantine:** Moves files into a timestamped directory while preserving relative paths.
 - **Restore:** Lists quarantined files in the dashboard and moves a selected file back to its original uploads path. An existing destination is never overwritten.
-- **Quarantine deletion:** Permanently deletes selected recoverable quarantine entries or all recoverable entries; backup ZIPs and CLI backup trees are excluded.
+- **Quarantine deletion:** Permanently deletes selected recoverable quarantine entries or all recoverable entries; backup ZIPs are excluded.
 - **Download ZIP & remove (dashboard):** Builds one ZIP, reads every archived entry back to verify its byte count and SHA-256 hash, and only then removes the originals and starts the download.
-- **Backup & remove (WP-CLI):** Copies files into `<quarantine>/backups/<run>/`, verifies size and SHA-256, and only then removes the originals.
+- **Backup & remove (WP-CLI):** Builds one ZIP below the protected UploadSleuth storage directory, verifies every entry by size and SHA-256, and only then removes the originals.
 - **Delete:** Permanently unlinks selected findings or the entire saved finding set and cannot be undone. The UI requires confirmation when dry-run is disabled.
 
-Every submitted path is checked against the current user's saved findings and normalized as a safe relative uploads path before an action is attempted.
+Every submitted path is checked against the current user's saved findings and normalized as a safe relative uploads path before an action is attempted. Filesystem actions are restricted to file types recognised by WordPress, symbolic links are rejected, and quarantined files receive a non-executable storage suffix.
 
 ### Media Library integrity
 
@@ -96,49 +96,49 @@ The check runs in configurable batches, shows real completed/total progress, and
 
 Only missing-original records can be selected for cleanup. Immediately before deletion, the server confirms that the attachment came from the saved integrity result and that its local original is still absent. It then calls `wp_delete_attachment($id, true)` so WordPress removes the post, attachment metadata, relationships, known remaining generated files, and runs normal attachment-deletion hooks.
 
-WordPress can delete the database record even if an individual companion file cannot be removed. Media Audit compares known local companions before and after the call, flags any survivors in the per-record outcome, and counts only files that actually disappeared as reclaimed storage.
+WordPress can delete the database record even if an individual companion file cannot be removed. UploadSleuth compares known local companions before and after the call, flags any survivors in the per-record outcome, and counts only files that actually disappeared as reclaimed storage.
 
 > Object-storage and media-offload plugins may intentionally remove local files while retaining valid remote media. The integrity screen cannot prove a remote object is absent. Review those records with the offload provider before deleting anything; both the screen and confirmations call out this risk.
 
 ## WP-CLI
 
-The command namespace is retained for backward compatibility:
+The command is:
 
 ```bash
-wp gp media-audit
+wp upload-sleuth
 ```
 
 ### Useful examples
 
 ```bash
 # Audit all registered media files.
-wp gp media-audit
+wp upload-sleuth
 
 # Audit one year and return machine-readable results.
-wp gp media-audit --uploads-subdir=2025 --format=json
+wp upload-sleuth --uploads-subdir=2025 --format=json
 
 # Only show candidates at least 100 KB and older than 90 days.
-wp gp media-audit --min-size=100 --older-than=90
+wp upload-sleuth --min-size=100 --older-than=90
 
 # Print counts and space without listing every file.
-wp gp media-audit --summary-only
+wp upload-sleuth --summary-only
 
 # Preview quarantine operations.
-wp gp media-audit --quarantine --dry-run
+wp upload-sleuth --quarantine --dry-run
 
 # Move all findings into quarantine.
-wp gp media-audit --quarantine
+wp upload-sleuth --quarantine
 
 # Preview a verified backup-and-remove run, then explicitly confirm it.
-wp gp media-audit --backup-delete --dry-run
-wp gp media-audit --backup-delete --yes
+wp upload-sleuth --backup-delete --dry-run
+wp upload-sleuth --backup-delete --yes
 
 # Preview permanent deletion, then explicitly confirm it.
-wp gp media-audit --delete --dry-run
-wp gp media-audit --delete --yes
+wp upload-sleuth --delete --dry-run
+wp upload-sleuth --delete --yes
 
 # Fail a CI or maintenance job when candidates exist.
-wp gp media-audit --summary-only --fail-on-findings
+wp upload-sleuth --summary-only --fail-on-findings
 ```
 
 ### Options
@@ -149,7 +149,7 @@ wp gp media-audit --summary-only --fail-on-findings
 | `--limit=<number>` | Limit database-checked candidates; `0` is unlimited. |
 | `--min-size=<kb>` | Only report candidates at least this large. |
 | `--older-than=<days>` | Only report candidates older than this age. |
-| `--all-files` | Include non-media extensions. |
+| `--all-files` | Report non-media extensions; filesystem actions still reject them. |
 | `--skip-db-check` | Use attachment metadata only. |
 | `--ignore=<patterns>` | Add comma-separated glob patterns. |
 | `--ignore-file=<path>` | Read newline-separated patterns, with `#` comments. |
@@ -175,7 +175,7 @@ WP-CLI reports when filesystem inventory and attachment indexing complete, then 
 
 ## What is checked
 
-Media Audit builds an attachment reference index from `_wp_attached_file` and `_wp_attachment_metadata`. It recognizes the main file, generated image sizes, `original_image`, and `backup_sizes`.
+UploadSleuth builds an attachment reference index from `_wp_attached_file` and `_wp_attachment_metadata`. It recognizes the main file, generated image sizes, `original_image`, and `backup_sizes`.
 
 For files not in that index, it searches common textual storage locations:
 
@@ -194,7 +194,7 @@ URL-encoded URLs, plain URLs, `/uploads/` fragments, and relative paths are cons
 - External databases, object storage, APIs, CSS/JavaScript/PHP files, and remote content are outside the default search.
 - The integrity check tests the local filesystem only, so intentionally offloaded media can appear as missing and must be verified with its remote provider.
 - A database-check limit makes the result incomplete.
-- The restore browser lists up to 500 quarantined files at a time; backup ZIPs and CLI backup trees are intentionally excluded.
+- The restore browser lists up to 500 quarantined files at a time; backup ZIPs are intentionally excluded.
 - Files removed directly from disk do not trigger WordPress attachment lifecycle hooks.
 
 ## Security model
@@ -234,42 +234,37 @@ File-action integrations can observe these hooks:
 
 Core `wp_delete_file` filtering also applies to backup removal and permanent deletion.
 
-## Naming recommendation
-
-**Upload Ledger — Media Reference Auditor** is a stronger long-term name.
-
-“Ledger” describes what the plugin actually does: reconcile files on disk against recorded references and expose discrepancies for review. It avoids promising that every candidate is safe to delete, and it distinguishes the project from existing WordPress plugins using “Media Audit” or “Media Sweep.” A future rename should keep the current option keys, text domain, and `wp gp media-audit` command as compatibility aliases.
-
-Other viable names:
-
-- Upload Ledger
-- StrayFile Audit
-- Uploads Reconciler
-- Media Reference Inspector
-
 ## Creating a release
 
 The **Create release** GitHub Actions workflow performs the complete release process manually and safely:
 
-1. Update the version in the `media-audit.php` plugin header, `MEDIA_AUDIT_VERSION`, and the `readme.txt` stable tag.
+1. Update the version in the `upload-sleuth.php` plugin header, `MEDIA_AUDIT_VERSION`, and the `readme.txt` stable tag.
 2. Add the matching changelog entries and a user-facing `.github/release-notes/X.Y.Z.md` file, then merge the changes into the default branch.
 3. Open **Actions → Create release → Run workflow**.
 4. Choose whether the release is a prerelease and run it from the commit you want to publish.
 
-The workflow refuses mismatched versions, missing release notes, and existing tags. It creates the `vX.Y.Z` tag, packages a clean `media-audit` plugin directory, verifies the ZIP, generates a SHA-256 checksum, and publishes both files with the curated release notes in a GitHub Release.
+The workflow refuses mismatched versions, missing release notes, and existing tags. It creates the `vX.Y.Z` tag, packages a clean `upload-sleuth` plugin directory, verifies the ZIP, generates a SHA-256 checksum, and publishes both files with the curated release notes in a GitHub Release.
 
 The repository also includes a WordPress Playground Blueprint at `.wordpress-org/blueprints/blueprint.json`. After the plugin is approved and its WordPress.org SVN repository is available, run **Actions → Sync WordPress.org Playground Blueprint** with a dry run first, then run it again with dry run disabled. Store the SVN credentials as the `SVN_USERNAME` and `SVN_PASSWORD` secrets in the `wordpress-org` environment. The release package excludes `.wordpress-org` because these assets belong in the WordPress.org SVN `assets` directory, not in the plugin ZIP.
 
 ## Changelog
 
+### 1.0.2
+
+- Renamed the plugin, text domain, package, dashboard URL, and WP-CLI command to UploadSleuth and `upload-sleuth`.
+- Limited filesystem actions to WordPress-recognised media types while retaining all-file reporting.
+- Replaced WP-CLI backup trees with verified ZIP archives.
+- Restricted runtime storage to `uploads/upload-sleuth`, protected it from direct web access, and made quarantined filenames non-executable.
+- Rejected symbolic links during quarantine and restore operations.
+
 ### 1.0.1
 
-- Matched the Settings tab width to the other Media Audit sections.
+- Matched the Settings tab width to the other UploadSleuth sections.
 - Expanded the How it works guide with scan stages, result meanings, action guidance, and a pre-cleanup checklist.
 
 ### 1.0.0
 
-- First stable public release of Media Audit.
+- First stable public release of UploadSleuth.
 - Included uploads auditing, database-reference checks, stoppable AJAX scans, saved partial results, and large-list controls.
 - Included quarantine and restoration, verified ZIP backup and removal, guarded permanent deletion, and storage-impact statistics.
 - Included Media Library integrity checks and WordPress-native cleanup of missing-file attachment records.
@@ -386,7 +381,7 @@ The repository also includes a WordPress Playground Blueprint at `.wordpress-org
 ### 0.9.1
 
 - Isolated ZIP downloads from the admin page so they cannot change its scroll position or navigation state.
-- Preserved the generated `media-audit-backup-YYYYMMDD-HHMMSS-xxxxxx.zip` filename instead of using the `admin-post` endpoint name.
+- Preserved the generated `upload-sleuth-backup-YYYYMMDD-HHMMSS-xxxxxx.zip` filename instead of using the `admin-post` endpoint name.
 
 ### 0.9.0
 
@@ -400,7 +395,7 @@ The repository also includes a WordPress Playground Blueprint at `.wordpress-org
 - Changed the dashboard backup action to create and automatically download one verified ZIP before removing originals.
 - Added an authenticated, short-lived, current-user-only archive download endpoint.
 - Prevented file-action buttons and results rerendering from jumping the admin page to the top.
-- Kept the existing verified backup-directory behavior for `wp gp media-audit --backup-delete`.
+- Kept the existing verified backup-directory behavior for `wp upload-sleuth --backup-delete`.
 
 ### 0.7.0
 
@@ -435,7 +430,7 @@ The repository also includes a WordPress Playground Blueprint at `.wordpress-org
 ### 0.4.0
 
 - Added a dedicated CLI Reference tab to the WordPress dashboard.
-- Listed every Media Audit CLI option with descriptions and safety behavior.
+- Listed every UploadSleuth CLI option with descriptions and safety behavior.
 - Added copy-ready audit, reporting, quarantine, backup, deletion, and CI recipes.
 - Added clipboard fallback behavior for non-secure admin environments.
 

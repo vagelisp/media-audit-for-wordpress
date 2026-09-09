@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: media-audit-release
+  group: upload-sleuth-release
   cancel-in-progress: false
 
 jobs:
@@ -31,8 +31,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          plugin_version="$(sed -nE 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*$/\1/p' media-audit.php | head -n 1)"
-          constant_version="$(sed -nE "s/^define\( 'MEDIA_AUDIT_VERSION', '([0-9]+\.[0-9]+\.[0-9]+)' \);$/\1/p" media-audit.php | head -n 1)"
+          plugin_version="$(sed -nE 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*$/\1/p' upload-sleuth.php | head -n 1)"
+          constant_version="$(sed -nE "s/^define\( 'MEDIA_AUDIT_VERSION', '([0-9]+\.[0-9]+\.[0-9]+)' \);$/\1/p" upload-sleuth.php | head -n 1)"
           stable_version="$(sed -nE 's/^Stable tag:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*$/\1/p' readme.txt | head -n 1)"
 
           if [[ -z "$plugin_version" ]]; then
@@ -53,7 +53,7 @@ jobs:
 
           echo "version=${plugin_version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          echo "archive=media-audit-${plugin_version}.zip" >> "$GITHUB_OUTPUT"
+          echo "archive=upload-sleuth-${plugin_version}.zip" >> "$GITHUB_OUTPUT"
           echo "notes=.github/release-notes/${plugin_version}.md" >> "$GITHUB_OUTPUT"
 
           if [[ ! -f ".github/release-notes/${plugin_version}.md" ]]; then
@@ -66,19 +66,20 @@ jobs:
         run: |
           set -euo pipefail
 
-          release_root="$RUNNER_TEMP/media-audit-release"
-          mkdir -p "$release_root/media-audit"
+          release_root="$RUNNER_TEMP/upload-sleuth-release"
+          mkdir -p "$release_root/upload-sleuth"
           rsync -a \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='.gitignore' \
             --exclude='.wordpress-org' \
+            --exclude='upload-sleuth-*.zip' \
             --exclude='media-audit-*.zip' \
-            ./ "$release_root/media-audit/"
+            ./ "$release_root/upload-sleuth/"
 
           archive_name="${{ steps.version.outputs.archive }}"
           archive="$GITHUB_WORKSPACE/$archive_name"
-          ( cd "$release_root" && zip -q -r "$archive" media-audit )
+          ( cd "$release_root" && zip -q -r "$archive" upload-sleuth )
           unzip -t "$archive"
           ( cd "$GITHUB_WORKSPACE" && sha256sum "$archive_name" > "${archive_name}.sha256" )
 
@@ -100,9 +101,9 @@ jobs:
           fi
 
           gh release create "$RELEASE_TAG" \
-            "$RELEASE_ARCHIVE#Media Audit ${RELEASE_VERSION}" \
+            "$RELEASE_ARCHIVE#UploadSleuth ${RELEASE_VERSION}" \
             "${RELEASE_ARCHIVE}.sha256#SHA-256 checksum" \
             --target "$GITHUB_SHA" \
-            --title "Media Audit ${RELEASE_VERSION}" \
+            --title "UploadSleuth ${RELEASE_VERSION}" \
             --notes-file "$RELEASE_NOTES" \
             "${release_flags[@]}"

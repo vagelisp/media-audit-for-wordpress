@@ -53,7 +53,7 @@ class Media_Audit_CLI_Command {
 		 * : Only report candidates modified more than this many days ago.
 		 *
 		 * [--all-files]
-		 * : Include non-media extensions too.
+		 * : Report non-media extensions too. File actions still reject them.
 		 *
 		 * [--skip-db-check]
 		 * : Skip DB text-reference checks and only use attachment metadata.
@@ -77,7 +77,7 @@ class Media_Audit_CLI_Command {
 		 * : Permanently delete findings. Requires --yes unless --dry-run is used.
 		 *
 		 * [--backup-delete]
-		 * : Copy findings to a verified timestamped backup, then remove the originals.
+		 * : Add findings to a verified timestamped ZIP, then remove the originals.
 		 *
 		 * [--yes]
 		 * : Confirm a permanent --delete operation.
@@ -86,7 +86,7 @@ class Media_Audit_CLI_Command {
 		 * : With --quarantine, show planned moves without changing files.
 		 *
 		 * [--quarantine-dir=<path>]
-		 * : Quarantine base under uploads. Default: .media-audit-quarantine.
+		 * : Optional storage subdirectory below uploads/upload-sleuth.
 		 *
 		 * [--format=<format>]
 		 * : Render format for result rows: table, csv, json, yaml. Default: table.
@@ -99,17 +99,15 @@ class Media_Audit_CLI_Command {
 		 *
 		 * ## EXAMPLES
 		 *
-		 *     wp gp media-audit
-		 *     wp gp media-audit --uploads-subdir=2024 --format=json
-		 *     wp gp media-audit --skip-db-check
-		 *     wp gp media-audit --ignore="cache/*,temp/*"
-		 *     wp gp media-audit --custom-tables="wp_plugin_assets:url"
-		 *     wp gp media-audit --quarantine --dry-run
-		 *     wp gp media-audit --older-than=90 --min-size=100 --summary-only
-		 *     wp gp media-audit --delete --dry-run
-		 *     wp gp media-audit --backup-delete --dry-run
-		 *
-		 * @subcommand media-audit
+		 *     wp upload-sleuth
+		 *     wp upload-sleuth --uploads-subdir=2024 --format=json
+		 *     wp upload-sleuth --skip-db-check
+		 *     wp upload-sleuth --ignore="cache/*,temp/*"
+		 *     wp upload-sleuth --custom-tables="wp_plugin_assets:url"
+		 *     wp upload-sleuth --quarantine --dry-run
+		 *     wp upload-sleuth --older-than=90 --min-size=100 --summary-only
+		 *     wp upload-sleuth --delete --dry-run
+		 *     wp upload-sleuth --backup-delete --dry-run
 		 *
 		 * @param array<string,string|bool> $args Positional args (unused).
 		 * @param array<string,string|bool> $assoc_args Command options.
@@ -233,7 +231,7 @@ class Media_Audit_CLI_Command {
 			? trim( (string) $assoc_args['quarantine-dir'] )
 			: trim( (string) $plugin_settings['quarantine_dir'] );
 		if ( '' === $quarantine_dir ) {
-			$quarantine_dir = '.media-audit-quarantine';
+			$quarantine_dir = 'upload-sleuth';
 		}
 
 		$ignore_patterns  = $this->get_ignore_patterns( $assoc_args );
@@ -374,7 +372,7 @@ class Media_Audit_CLI_Command {
 		$oldest_allowed_mtime = $older_than_days > 0 ? time() - ( $older_than_days * DAY_IN_SECONDS ) : 0;
 		$quarantine_dir       = isset( $assoc_args['quarantine-dir'] ) ? trim( (string) $assoc_args['quarantine-dir'] ) : trim( (string) $settings['quarantine_dir'] );
 		if ( '' === $quarantine_dir ) {
-			$quarantine_dir = '.media-audit-quarantine';
+			$quarantine_dir = 'upload-sleuth';
 		}
 
 		// Preparation intentionally performs the filesystem and attachment passes
@@ -561,10 +559,24 @@ class Media_Audit_CLI_Command {
 			);
 		}
 
-		$stray_rows = array();
+		$stray_rows   = array();
+		$blocked_rows = array();
 		foreach ( $paths as $path ) {
 			$path = $this->normalize_relative_path( (string) $path );
 			if ( '' === $path ) {
+				continue;
+			}
+			// --all-files expands audit visibility, but never expands mutation scope.
+			// File actions are intentionally limited to extensions recognised by the
+			// active WordPress MIME map so executable or arbitrary files cannot be
+			// moved into a public uploads safety directory.
+			if ( ! $this->is_media_file( $path ) ) {
+				$blocked_rows[] = array(
+					'path'        => $path,
+					'action'      => 'blocked',
+					'destination' => '',
+					'message'     => 'file actions are limited to recognised WordPress media types; --all-files only affects scanning',
+				);
 				continue;
 			}
 			$stray_rows[] = array( 'path' => $path );
@@ -575,14 +587,23 @@ class Media_Audit_CLI_Command {
 			'blocked_rows' => array(),
 		);
 		$stray_rows   = $validation['safe_rows'];
-		$blocked_rows = $validation['blocked_rows'];
+		$blocked_rows = array_merge( $blocked_rows, $validation['blocked_rows'] );
 
 		if ( 'quarantine' === $action ) {
 			return array_merge( $blocked_rows, $this->quarantine_stray_files( $stray_rows, (string) $uploads['basedir'], $quarantine_dir, $dry_run ) );
 		}
 
 		if ( 'backup-delete' === $action ) {
-			return array_merge( $blocked_rows, $this->backup_and_delete_files( $stray_rows, (string) $uploads['basedir'], $quarantine_dir, $dry_run ) );
+			$backup = $this->zip_backup_and_delete_files( $stray_rows, (string) $uploads['basedir'], $quarantine_dir, $dry_run );
+			if ( ! empty( $backup['archive'] ) ) {
+				foreach ( $backup['rows'] as &$backup_row ) {
+					if ( 'backed-up-and-removed' === $backup_row['action'] ) {
+						$backup_row['destination'] = $backup['archive'];
+					}
+				}
+				unset( $backup_row );
+			}
+			return array_merge( $blocked_rows, $backup['rows'] );
 		}
 
 		if ( 'delete' === $action ) {
@@ -629,10 +650,20 @@ class Media_Audit_CLI_Command {
 			);
 		}
 
-		$stray_rows = array();
+		$stray_rows   = array();
+		$blocked_rows = array();
 		foreach ( $paths as $path ) {
 			$path = $this->normalize_relative_path( (string) $path );
 			if ( '' !== $path ) {
+				if ( ! $this->is_media_file( $path ) ) {
+					$blocked_rows[] = array(
+						'path'        => $path,
+						'action'      => 'blocked',
+						'destination' => '',
+						'message'     => 'file actions are limited to recognised WordPress media types; --all-files only affects scanning',
+					);
+					continue;
+				}
 				$stray_rows[] = array( 'path' => $path );
 			}
 		}
@@ -642,7 +673,7 @@ class Media_Audit_CLI_Command {
 			'blocked_rows' => array(),
 		);
 		$result         = $this->zip_backup_and_delete_files( $validation['safe_rows'], (string) $uploads['basedir'], $quarantine_dir, $dry_run );
-		$result['rows'] = array_merge( $validation['blocked_rows'], $result['rows'] );
+		$result['rows'] = array_merge( $blocked_rows, $validation['blocked_rows'], $result['rows'] );
 		return $result;
 	}
 
@@ -712,7 +743,7 @@ class Media_Audit_CLI_Command {
 			'ignore_patterns' => '',
 			'custom_tables'   => '',
 			'scan_all_tables' => 0,
-			'quarantine_dir'  => '.media-audit-quarantine',
+			'quarantine_dir'  => 'upload-sleuth',
 		);
 
 		$settings = get_option( 'media_audit_settings', array() );
@@ -1222,7 +1253,7 @@ class Media_Audit_CLI_Command {
 		 *
 		 * @param array<string,mixed> $assoc_args CLI options.
 		 * @param bool                $scan_all_tables Include non-core tables automatically.
-		 * @param array<string,mixed> $plugin_settings Saved Media Audit settings.
+		 * @param array<string,mixed> $plugin_settings Saved UploadSleuth settings.
 		 * @return array<int,array<string,string>>
 		 */
 	private function build_custom_db_checks( $assoc_args, $scan_all_tables, $plugin_settings ) {
@@ -1411,12 +1442,13 @@ class Media_Audit_CLI_Command {
 	private function quarantine_stray_files( $stray_rows, $uploads_dir, $quarantine_dir, $dry_run ) {
 		$results        = array();
 		$uploads_dir    = untrailingslashit( wp_normalize_path( $uploads_dir ) );
-		$quarantine_dir = $this->normalize_relative_path( $quarantine_dir );
-		if ( '' === $quarantine_dir ) {
-			$quarantine_dir = '.media-audit-quarantine';
-		}
+		$quarantine_dir = $this->normalize_storage_directory( $quarantine_dir );
 
 		$run_dir = $uploads_dir . '/' . $quarantine_dir . '/' . gmdate( 'Ymd-His' );
+		if ( ! $dry_run && ! $this->prepare_storage_directory( $uploads_dir . '/' . $quarantine_dir ) ) {
+			$this->cli_warning( 'Failed to prepare the UploadSleuth storage directory.' );
+			return $results;
+		}
 		if ( ! $dry_run && ! is_dir( $run_dir ) && ! wp_mkdir_p( $run_dir ) ) {
 			$this->cli_warning( 'Failed to create quarantine dir: ' . $run_dir );
 			return $results;
@@ -1429,16 +1461,16 @@ class Media_Audit_CLI_Command {
 			}
 
 			$source          = $uploads_dir . '/' . $relative;
-			$destination     = $run_dir . '/' . $relative;
+			$destination     = $run_dir . '/' . $relative . '.uploadsleuth';
 			$destination_dir = dirname( $destination );
 			$source_size     = is_file( $source ) ? (int) filesize( $source ) : 0;
 
-			if ( ! file_exists( $source ) ) {
+			if ( ! is_file( $source ) || is_link( $source ) ) {
 				$results[] = array(
 					'path'        => $relative,
 					'action'      => 'skipped',
 					'destination' => $destination,
-					'message'     => 'source not found',
+					'message'     => 'source missing or symbolic link',
 				);
 				continue;
 			}
@@ -1504,13 +1536,10 @@ class Media_Audit_CLI_Command {
 	private function zip_backup_and_delete_files( $stray_rows, $uploads_dir, $quarantine_dir, $dry_run ) {
 		$results        = array();
 		$uploads_dir    = untrailingslashit( wp_normalize_path( $uploads_dir ) );
-		$quarantine_dir = $this->normalize_relative_path( $quarantine_dir );
-		if ( '' === $quarantine_dir ) {
-			$quarantine_dir = '.media-audit-quarantine';
-		}
-		$archive_dir  = $uploads_dir . '/' . $quarantine_dir . '/backups';
-		$archive_name = 'media-audit-backup-' . gmdate( 'Ymd-His' ) . '-' . strtolower( wp_generate_password( 6, false, false ) ) . '.zip';
-		$archive_path = $archive_dir . '/' . $archive_name;
+		$quarantine_dir = $this->normalize_storage_directory( $quarantine_dir );
+		$archive_dir    = $uploads_dir . '/' . $quarantine_dir . '/backups';
+		$archive_name   = 'upload-sleuth-backup-' . gmdate( 'Ymd-His' ) . '-' . strtolower( wp_generate_password( 6, false, false ) ) . '.zip';
+		$archive_path   = $archive_dir . '/' . $archive_name;
 
 		if ( $dry_run ) {
 			foreach ( $stray_rows as $row ) {
@@ -1543,7 +1572,7 @@ class Media_Audit_CLI_Command {
 				'archive' => '',
 			);
 		}
-		if ( ! is_dir( $archive_dir ) && ! wp_mkdir_p( $archive_dir ) ) {
+		if ( ! $this->prepare_storage_directory( $uploads_dir . '/' . $quarantine_dir ) || ( ! is_dir( $archive_dir ) && ! wp_mkdir_p( $archive_dir ) ) ) {
 			return array(
 				'rows'    => array(
 					array(
@@ -1735,128 +1764,6 @@ class Media_Audit_CLI_Command {
 	}
 
 		/**
-		 * Copy candidates to a verified backup and then remove their originals.
-		 *
-		 * The backup preserves each path below a unique timestamped directory.
-		 * An original is only removed after both size and SHA-256 checks succeed.
-		 *
-		 * @param array<int,array<string,mixed>> $stray_rows Candidate rows.
-		 * @param string                         $uploads_dir Uploads base directory.
-		 * @param string                         $quarantine_dir Configured safety directory under uploads.
-		 * @param bool                           $dry_run Whether to simulate the operation.
-		 * @return array<int,array<string,string>>
-		 */
-	private function backup_and_delete_files( $stray_rows, $uploads_dir, $quarantine_dir, $dry_run ) {
-		$results        = array();
-		$uploads_dir    = untrailingslashit( wp_normalize_path( $uploads_dir ) );
-		$quarantine_dir = $this->normalize_relative_path( $quarantine_dir );
-		if ( '' === $quarantine_dir ) {
-			$quarantine_dir = '.media-audit-quarantine';
-		}
-
-		$run_suffix = $dry_run ? 'preview' : strtolower( wp_generate_password( 6, false, false ) );
-		$run_dir    = $uploads_dir . '/' . $quarantine_dir . '/backups/' . gmdate( 'Ymd-His' ) . '-' . $run_suffix;
-		if ( ! $dry_run && ! is_dir( $run_dir ) && ! wp_mkdir_p( $run_dir ) ) {
-			return array(
-				array(
-					'path'        => '',
-					'action'      => 'failed',
-					'destination' => $run_dir,
-					'message'     => 'could not create backup directory',
-				),
-			);
-		}
-
-		foreach ( $stray_rows as $row ) {
-			$relative = isset( $row['path'] ) ? $this->normalize_relative_path( (string) $row['path'] ) : '';
-			if ( '' === $relative ) {
-				continue;
-			}
-			$source      = $uploads_dir . '/' . $relative;
-			$source_size = is_file( $source ) ? (int) filesize( $source ) : 0;
-			$destination = $run_dir . '/' . $relative;
-
-			if ( ! is_file( $source ) || is_link( $source ) ) {
-				$results[] = array(
-					'path'        => $relative,
-					'action'      => 'skipped',
-					'destination' => $destination,
-					'message'     => 'source missing or symbolic link',
-				);
-				continue;
-			}
-			if ( $dry_run ) {
-				$results[] = array(
-					'path'        => $relative,
-					'action'      => 'would-back-up-and-remove',
-					'destination' => $destination,
-					'message'     => 'dry-run',
-				);
-				continue;
-			}
-
-			$destination_dir = dirname( $destination );
-			if ( ! is_dir( $destination_dir ) && ! wp_mkdir_p( $destination_dir ) ) {
-				$results[] = array(
-					'path'        => $relative,
-					'action'      => 'failed',
-					'destination' => $destination,
-					'message'     => 'could not create backup path',
-				);
-				continue;
-			}
-
-			// Removal is conditional on two independent equality checks. A partial or
-			// changed copy is discarded and the original is retained.
-			$source_size = filesize( $source );
-			$source_hash = hash_file( 'sha256', $source );
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_copy -- The copied bytes are verified before the source can be removed.
-			if ( ! copy( $source, $destination ) ) {
-				$results[] = array(
-					'path'        => $relative,
-					'action'      => 'failed',
-					'destination' => $destination,
-					'message'     => 'backup copy failed; original retained',
-				);
-				continue;
-			}
-
-			$backup_size = filesize( $destination );
-			$backup_hash = hash_file( 'sha256', $destination );
-			if ( false === $source_size || false === $source_hash || $source_size !== $backup_size || ! hash_equals( (string) $source_hash, (string) $backup_hash ) ) {
-				wp_delete_file( $destination );
-				$results[] = array(
-					'path'        => $relative,
-					'action'      => 'failed',
-					'destination' => $destination,
-					'message'     => 'backup verification failed; original retained',
-				);
-				continue;
-			}
-
-			do_action( 'media_audit_before_file_action', $source, $relative, 'backup-delete' );
-			if ( wp_delete_file( $source ) && ! file_exists( $source ) ) {
-				do_action( 'media_audit_file_backed_up_and_removed', $source, $destination, $relative );
-				$results[] = array(
-					'path'        => $relative,
-					'action'      => 'backed-up-and-removed',
-					'destination' => $destination,
-					'message'     => 'SHA-256 verified',
-				);
-			} else {
-				$results[] = array(
-					'path'        => $relative,
-					'action'      => 'failed',
-					'destination' => $destination,
-					'message'     => 'backup verified but original could not be removed',
-				);
-			}
-		}
-
-		return $results;
-	}
-
-		/**
 		 * Permanently delete likely stray files.
 		 *
 		 * @param array<int,array<string,mixed>> $stray_rows Stray rows.
@@ -1942,6 +1849,61 @@ class Media_Audit_CLI_Command {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Keep runtime files below the plugin's dedicated uploads directory.
+	 *
+	 * A custom value is treated as a child directory. Supplying the canonical
+	 * root itself avoids adding the prefix twice.
+	 *
+	 * @param string $directory Requested storage directory.
+	 * @return string Safe directory relative to uploads.
+	 */
+	private function normalize_storage_directory( $directory ) {
+		$directory = $this->normalize_relative_path( $directory );
+		if ( '' === $directory || 'upload-sleuth' === $directory ) {
+			return 'upload-sleuth';
+		}
+		if ( 0 === strpos( $directory, 'upload-sleuth/' ) ) {
+			return $directory;
+		}
+		return 'upload-sleuth/' . $directory;
+	}
+
+	/**
+	 * Create the private plugin storage root and add web-server protections.
+	 *
+	 * Quarantined files also receive a non-executable `.uploadsleuth` suffix.
+	 * These defence-in-depth files prevent directory browsing and direct access
+	 * on Apache and IIS while the suffix remains effective on other servers.
+	 *
+	 * @param string $directory Absolute plugin storage directory.
+	 * @return bool Whether the directory is ready for use.
+	 */
+	private function prepare_storage_directory( $directory ) {
+		$directory = untrailingslashit( wp_normalize_path( $directory ) );
+		if ( ! is_dir( $directory ) && ! wp_mkdir_p( $directory ) ) {
+			return false;
+		}
+
+		$protections = array(
+			'index.php'  => "<?php\n// Silence is golden.\n",
+			'.htaccess'  => "Options -Indexes\n<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n",
+			'web.config' => "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<configuration><system.webServer><authorization><remove users=\"*\" roles=\"\" verbs=\"\" /><add accessType=\"Deny\" users=\"*\" /></authorization></system.webServer></configuration>\n",
+		);
+		foreach ( $protections as $filename => $contents ) {
+			$path = $directory . '/' . $filename;
+			if ( file_exists( $path ) ) {
+				continue;
+			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Runtime protection files must be created without an interactive credentials prompt.
+			if ( false === file_put_contents( $path, $contents ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 		/**

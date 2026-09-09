@@ -1,6 +1,6 @@
 <?php
 /**
- * AJAX-powered admin experience for Media Audit.
+ * AJAX-powered admin experience for UploadSleuth.
  *
  * @package GPMediaAudit
  */
@@ -31,7 +31,7 @@ class Media_Audit_Admin_Page {
 	/** Prefix for short-lived cancellation markers used to avoid stop races. */
 	const STOP_TRANSIENT_PREFIX = 'media_audit_scan_stop_';
 
-	/** Nonce action shared by authenticated Media Audit AJAX requests. */
+	/** Nonce action shared by authenticated UploadSleuth AJAX requests. */
 	const NONCE_ACTION = 'media_audit_ajax';
 
 	/** Persistent dashboard cleanup counters. */
@@ -60,9 +60,9 @@ class Media_Audit_Admin_Page {
 		add_action( 'admin_post_media_audit_download_backup', array( __CLASS__, 'download_backup' ) );
 	}
 
-	/** Add Media Audit below the WordPress Tools menu. */
+	/** Add UploadSleuth below the WordPress Tools menu. */
 	public static function register_menu() {
-		add_management_page( __( 'Media Audit', 'media-audit' ), __( 'Media Audit', 'media-audit' ), 'manage_options', 'media-audit', array( __CLASS__, 'render_page' ) );
+		add_management_page( __( 'UploadSleuth', 'upload-sleuth' ), __( 'UploadSleuth', 'upload-sleuth' ), 'manage_options', 'upload-sleuth', array( __CLASS__, 'render_page' ) );
 	}
 
 	/** Register the single array-valued plugin option and sanitizer. */
@@ -84,7 +84,7 @@ class Media_Audit_Admin_Page {
 	 * @param string $hook_suffix Current WordPress admin screen hook.
 	 */
 	public static function enqueue_assets( $hook_suffix ) {
-		if ( 'tools_page_media-audit' !== $hook_suffix ) {
+		if ( 'tools_page_upload-sleuth' !== $hook_suffix ) {
 			return;
 		}
 		wp_enqueue_style( 'media-audit-admin', MEDIA_AUDIT_URL . 'assets/admin.css', array(), MEDIA_AUDIT_VERSION );
@@ -105,34 +105,34 @@ class Media_Audit_Admin_Page {
 				'consoleDiagnostics' => ! empty( self::get_settings()['console_diagnostics'] ),
 				'uiRowBatchSize'     => (int) self::get_settings()['ui_row_batch_size'],
 				'i18n'               => array(
-					'running'                    => __( 'Scanning uploads and checking references…', 'media-audit' ),
-					'stopping'                   => __( 'Stopping after the current batch…', 'media-audit' ),
-					'stopped'                    => __( 'Scan stopped. Partial findings have been saved.', 'media-audit' ),
-					'working'                    => __( 'Applying the selected action…', 'media-audit' ),
-					'quarantining'               => __( 'Moving files to quarantine…', 'media-audit' ),
-					'preparingZip'               => __( 'Creating and verifying the backup ZIP…', 'media-audit' ),
-					'deletingFiles'              => __( 'Permanently deleting files…', 'media-audit' ),
-					'deletingAllFindings'        => __( 'Deleting all findings…', 'media-audit' ),
-					'loadingQuarantine'          => __( 'Loading quarantined files…', 'media-audit' ),
-					'restoringFile'              => __( 'Restoring quarantined file…', 'media-audit' ),
-					'deletingQuarantine'         => __( 'Deleting quarantined files…', 'media-audit' ),
-					'filesQueued'                => __( 'files queued; results update after each completed batch.', 'media-audit' ),
-					'integrityScanning'          => __( 'Checking Media Library records and local files…', 'media-audit' ),
-					'integrityDeleteConfirm'     => __( 'Permanently delete the selected missing-file attachment records using WordPress? Remaining generated files may also be removed. Confirm these are not valid offloaded media. This cannot be undone.', 'media-audit' ),
-					'integrityDeleteAllConfirm'  => __( 'Permanently delete every reported missing-file attachment record using WordPress? Remaining generated files may also be removed. This may delete valid offloaded-media records and cannot be undone.', 'media-audit' ),
-					'requestFailed'              => __( 'The request failed. Check the server logs and try again.', 'media-audit' ),
-					'selectFiles'                => __( 'Select at least one file first.', 'media-audit' ),
-					'deleteConfirm'              => __( 'Permanently delete the selected files? This cannot be undone.', 'media-audit' ),
-					'backupConfirm'              => __( 'Create and verify a downloadable ZIP, then remove the selected originals?', 'media-audit' ),
-					'deleteAllFindingsConfirm'   => __( 'Permanently delete every file in the current findings? This cannot be undone.', 'media-audit' ),
-					'quarantineDeleteConfirm'    => __( 'Permanently delete the selected quarantined files? This cannot be undone.', 'media-audit' ),
-					'quarantineDeleteAllConfirm' => __( 'Permanently delete every recoverable quarantined file? Backup ZIPs are not included. This cannot be undone.', 'media-audit' ),
-					'clearConfirm'               => __( 'Clear the saved results from this screen?', 'media-audit' ),
-					'noResults'                  => __( 'No likely stray files were found in this scan.', 'media-audit' ),
-					'noMatches'                  => __( 'No results match the current filter.', 'media-audit' ),
-					'copied'                     => __( 'Copied!', 'media-audit' ),
-					'copyFailed'                 => __( 'Could not copy automatically.', 'media-audit' ),
-					'settingsSaved'              => __( 'Settings saved.', 'media-audit' ),
+					'running'                    => __( 'Scanning uploads and checking references…', 'upload-sleuth' ),
+					'stopping'                   => __( 'Stopping after the current batch…', 'upload-sleuth' ),
+					'stopped'                    => __( 'Scan stopped. Partial findings have been saved.', 'upload-sleuth' ),
+					'working'                    => __( 'Applying the selected action…', 'upload-sleuth' ),
+					'quarantining'               => __( 'Moving files to quarantine…', 'upload-sleuth' ),
+					'preparingZip'               => __( 'Creating and verifying the backup ZIP…', 'upload-sleuth' ),
+					'deletingFiles'              => __( 'Permanently deleting files…', 'upload-sleuth' ),
+					'deletingAllFindings'        => __( 'Deleting all findings…', 'upload-sleuth' ),
+					'loadingQuarantine'          => __( 'Loading quarantined files…', 'upload-sleuth' ),
+					'restoringFile'              => __( 'Restoring quarantined file…', 'upload-sleuth' ),
+					'deletingQuarantine'         => __( 'Deleting quarantined files…', 'upload-sleuth' ),
+					'filesQueued'                => __( 'files queued; results update after each completed batch.', 'upload-sleuth' ),
+					'integrityScanning'          => __( 'Checking Media Library records and local files…', 'upload-sleuth' ),
+					'integrityDeleteConfirm'     => __( 'Permanently delete the selected missing-file attachment records using WordPress? Remaining generated files may also be removed. Confirm these are not valid offloaded media. This cannot be undone.', 'upload-sleuth' ),
+					'integrityDeleteAllConfirm'  => __( 'Permanently delete every reported missing-file attachment record using WordPress? Remaining generated files may also be removed. This may delete valid offloaded-media records and cannot be undone.', 'upload-sleuth' ),
+					'requestFailed'              => __( 'The request failed. Check the server logs and try again.', 'upload-sleuth' ),
+					'selectFiles'                => __( 'Select at least one file first.', 'upload-sleuth' ),
+					'deleteConfirm'              => __( 'Permanently delete the selected files? This cannot be undone.', 'upload-sleuth' ),
+					'backupConfirm'              => __( 'Create and verify a downloadable ZIP, then remove the selected originals?', 'upload-sleuth' ),
+					'deleteAllFindingsConfirm'   => __( 'Permanently delete every file in the current findings? This cannot be undone.', 'upload-sleuth' ),
+					'quarantineDeleteConfirm'    => __( 'Permanently delete the selected quarantined files? This cannot be undone.', 'upload-sleuth' ),
+					'quarantineDeleteAllConfirm' => __( 'Permanently delete every recoverable quarantined file? Backup ZIPs are not included. This cannot be undone.', 'upload-sleuth' ),
+					'clearConfirm'               => __( 'Clear the saved results from this screen?', 'upload-sleuth' ),
+					'noResults'                  => __( 'No likely stray files were found in this scan.', 'upload-sleuth' ),
+					'noMatches'                  => __( 'No results match the current filter.', 'upload-sleuth' ),
+					'copied'                     => __( 'Copied!', 'upload-sleuth' ),
+					'copyFailed'                 => __( 'Could not copy automatically.', 'upload-sleuth' ),
+					'settingsSaved'              => __( 'Settings saved.', 'upload-sleuth' ),
 				),
 			)
 		);
@@ -148,7 +148,7 @@ class Media_Audit_Admin_Page {
 			'ignore_patterns'     => '',
 			'custom_tables'       => '',
 			'scan_all_tables'     => 0,
-			'quarantine_dir'      => '.media-audit-quarantine',
+			'quarantine_dir'      => 'upload-sleuth',
 			'revalidate_actions'  => 1,
 			'scan_batch_size'     => 25,
 			'action_batch_size'   => 20,
@@ -214,12 +214,12 @@ class Media_Audit_Admin_Page {
 	 */
 	public static function sanitize_settings( $input ) {
 		$input          = is_array( $input ) ? $input : array();
-		$quarantine_dir = isset( $input['quarantine_dir'] ) ? self::sanitize_relative_path( $input['quarantine_dir'] ) : '';
+		$quarantine_dir = isset( $input['quarantine_dir'] ) ? self::normalize_storage_directory( $input['quarantine_dir'] ) : 'upload-sleuth';
 		return array(
 			'ignore_patterns'     => isset( $input['ignore_patterns'] ) ? sanitize_textarea_field( (string) $input['ignore_patterns'] ) : '',
 			'custom_tables'       => isset( $input['custom_tables'] ) ? sanitize_text_field( (string) $input['custom_tables'] ) : '',
 			'scan_all_tables'     => empty( $input['scan_all_tables'] ) ? 0 : 1,
-			'quarantine_dir'      => '' !== $quarantine_dir ? $quarantine_dir : '.media-audit-quarantine',
+			'quarantine_dir'      => $quarantine_dir,
 			'revalidate_actions'  => empty( $input['revalidate_actions'] ) ? 0 : 1,
 			'scan_batch_size'     => isset( $input['scan_batch_size'] ) ? max( 1, min( 100, (int) $input['scan_batch_size'] ) ) : 25,
 			'action_batch_size'   => isset( $input['action_batch_size'] ) ? max( 1, min( 100, (int) $input['action_batch_size'] ) ) : 20,
@@ -238,74 +238,74 @@ class Media_Audit_Admin_Page {
 		?>
 		<div class="wrap media-audit-wrap">
 			<header class="media-audit-hero">
-				<div><p class="media-audit-eyebrow"><?php esc_html_e( 'UPLOADS INTELLIGENCE', 'media-audit' ); ?></p><h1><?php esc_html_e( 'Media Audit', 'media-audit' ); ?></h1><p><?php esc_html_e( 'Find files that appear to be unreferenced, inspect the evidence, then quarantine them before considering permanent deletion.', 'media-audit' ); ?></p></div>
-				<div class="media-audit-safety"><span class="dashicons dashicons-shield"></span><strong><?php esc_html_e( 'Safety first', 'media-audit' ); ?></strong><span><?php esc_html_e( 'Results are candidates, never a guarantee.', 'media-audit' ); ?></span></div>
+				<div><p class="media-audit-eyebrow"><?php esc_html_e( 'UPLOADS INTELLIGENCE', 'upload-sleuth' ); ?></p><h1><?php esc_html_e( 'UploadSleuth', 'upload-sleuth' ); ?></h1><p><?php esc_html_e( 'Find files that appear to be unreferenced, inspect the evidence, then quarantine them before considering permanent deletion.', 'upload-sleuth' ); ?></p></div>
+				<div class="media-audit-safety"><span class="dashicons dashicons-shield"></span><strong><?php esc_html_e( 'Safety first', 'upload-sleuth' ); ?></strong><span><?php esc_html_e( 'Results are candidates, never a guarantee.', 'upload-sleuth' ); ?></span></div>
 			</header>
-			<nav class="nav-tab-wrapper media-audit-tabs" aria-label="<?php esc_attr_e( 'Media Audit sections', 'media-audit' ); ?>"><button type="button" class="nav-tab nav-tab-active" data-tab="scan"><?php esc_html_e( 'Scan & results', 'media-audit' ); ?></button><button type="button" class="nav-tab" data-tab="integrity"><?php esc_html_e( 'Library integrity', 'media-audit' ); ?></button><button type="button" class="nav-tab" data-tab="settings"><?php esc_html_e( 'Settings', 'media-audit' ); ?></button><button type="button" class="nav-tab" data-tab="cli"><?php esc_html_e( 'CLI reference', 'media-audit' ); ?></button><button type="button" class="nav-tab" data-tab="help"><?php esc_html_e( 'How it works', 'media-audit' ); ?></button></nav>
+			<nav class="nav-tab-wrapper media-audit-tabs" aria-label="<?php esc_attr_e( 'UploadSleuth sections', 'upload-sleuth' ); ?>"><button type="button" class="nav-tab nav-tab-active" data-tab="scan"><?php esc_html_e( 'Scan & results', 'upload-sleuth' ); ?></button><button type="button" class="nav-tab" data-tab="integrity"><?php esc_html_e( 'Library integrity', 'upload-sleuth' ); ?></button><button type="button" class="nav-tab" data-tab="settings"><?php esc_html_e( 'Settings', 'upload-sleuth' ); ?></button><button type="button" class="nav-tab" data-tab="cli"><?php esc_html_e( 'CLI reference', 'upload-sleuth' ); ?></button><button type="button" class="nav-tab" data-tab="help"><?php esc_html_e( 'How it works', 'upload-sleuth' ); ?></button></nav>
 
 			<section class="media-audit-panel is-active" data-panel="scan">
-				<section id="media-audit-impact-panel" class="media-audit-card media-audit-impact-panel" aria-labelledby="media-audit-impact-title" hidden><div class="media-audit-impact-head"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'STORAGE IMPACT', 'media-audit' ); ?></p><h2 id="media-audit-impact-title"><?php esc_html_e( 'Cleanup statistics', 'media-audit' ); ?></h2><p><?php esc_html_e( 'Cumulative dashboard actions tracked from version 0.11.0 onward. Quarantine moves do not count as reclaimed space.', 'media-audit' ); ?></p></div></div><div id="media-audit-impact-stats" class="media-audit-stats media-audit-impact-stats"></div></section>
+				<section id="media-audit-impact-panel" class="media-audit-card media-audit-impact-panel" aria-labelledby="media-audit-impact-title" hidden><div class="media-audit-impact-head"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'STORAGE IMPACT', 'upload-sleuth' ); ?></p><h2 id="media-audit-impact-title"><?php esc_html_e( 'Cleanup statistics', 'upload-sleuth' ); ?></h2><p><?php esc_html_e( 'Cumulative dashboard actions tracked from version 0.11.0 onward. Quarantine moves do not count as reclaimed space.', 'upload-sleuth' ); ?></p></div></div><div id="media-audit-impact-stats" class="media-audit-stats media-audit-impact-stats"></div></section>
 				<div class="media-audit-grid">
 					<div class="media-audit-card media-audit-scan-card">
-						<div class="media-audit-card-heading"><div><h2><?php esc_html_e( 'Run a new audit', 'media-audit' ); ?></h2><p><?php esc_html_e( 'Start narrow, review the findings, then broaden the scan.', 'media-audit' ); ?></p></div><span class="dashicons dashicons-search"></span></div>
+						<div class="media-audit-card-heading"><div><h2><?php esc_html_e( 'Run a new audit', 'upload-sleuth' ); ?></h2><p><?php esc_html_e( 'Start narrow, review the findings, then broaden the scan.', 'upload-sleuth' ); ?></p></div><span class="dashicons dashicons-search"></span></div>
 						<form id="media-audit-run-form">
-							<div class="media-audit-field-row"><label><span><?php esc_html_e( 'Uploads subdirectory', 'media-audit' ); ?></span><input type="text" name="uploads_subdir" placeholder="2026/08" /><small><?php esc_html_e( 'Optional; relative to uploads.', 'media-audit' ); ?></small></label><label><span><?php esc_html_e( 'Database check limit', 'media-audit' ); ?></span><input type="number" name="limit" min="0" value="0" /><small><?php esc_html_e( '0 checks every candidate.', 'media-audit' ); ?></small></label></div>
-							<div class="media-audit-options"><label><input type="checkbox" name="all_files" value="1" /> <span><?php esc_html_e( 'Include non-media files', 'media-audit' ); ?></span></label><label><input type="checkbox" name="skip_db_check" value="1" /> <span><?php esc_html_e( 'Fast scan (skip database text references)', 'media-audit' ); ?></span></label></div>
-							<button type="submit" class="button button-primary button-hero"><span class="dashicons dashicons-search"></span><?php esc_html_e( 'Run audit', 'media-audit' ); ?></button>
+							<div class="media-audit-field-row"><label><span><?php esc_html_e( 'Uploads subdirectory', 'upload-sleuth' ); ?></span><input type="text" name="uploads_subdir" placeholder="2026/08" /><small><?php esc_html_e( 'Optional; relative to uploads.', 'upload-sleuth' ); ?></small></label><label><span><?php esc_html_e( 'Database check limit', 'upload-sleuth' ); ?></span><input type="number" name="limit" min="0" value="0" /><small><?php esc_html_e( '0 checks every candidate.', 'upload-sleuth' ); ?></small></label></div>
+							<div class="media-audit-options"><label><input type="checkbox" name="all_files" value="1" /> <span><?php esc_html_e( 'Include non-media files (scan only)', 'upload-sleuth' ); ?></span></label><label><input type="checkbox" name="skip_db_check" value="1" /> <span><?php esc_html_e( 'Fast scan (skip database text references)', 'upload-sleuth' ); ?></span></label></div>
+							<button type="submit" class="button button-primary button-hero"><span class="dashicons dashicons-search"></span><?php esc_html_e( 'Run audit', 'upload-sleuth' ); ?></button>
 						</form>
 					</div>
-					<aside class="media-audit-card media-audit-guidance"><h2><?php esc_html_e( 'Recommended workflow', 'media-audit' ); ?></h2><ol><li><?php esc_html_e( 'Scan a recent year or month first.', 'media-audit' ); ?></li><li><?php esc_html_e( 'Review and dry-run selected candidates.', 'media-audit' ); ?></li><li><?php esc_html_e( 'Quarantine before permanently deleting.', 'media-audit' ); ?></li></ol></aside>
+					<aside class="media-audit-card media-audit-guidance"><h2><?php esc_html_e( 'Recommended workflow', 'upload-sleuth' ); ?></h2><ol><li><?php esc_html_e( 'Scan a recent year or month first.', 'upload-sleuth' ); ?></li><li><?php esc_html_e( 'Review and dry-run selected candidates.', 'upload-sleuth' ); ?></li><li><?php esc_html_e( 'Quarantine before permanently deleting.', 'upload-sleuth' ); ?></li></ol></aside>
 				</div>
-				<div id="media-audit-progress" class="media-audit-progress" hidden><span class="spinner is-active"></span><strong></strong><button type="button" class="button" id="media-audit-stop"><?php esc_html_e( 'Stop scan', 'media-audit' ); ?></button><div><i></i></div><small><?php esc_html_e( 'Stopping preserves all findings completed through the latest batch.', 'media-audit' ); ?></small></div>
+				<div id="media-audit-progress" class="media-audit-progress" hidden><span class="spinner is-active"></span><strong></strong><button type="button" class="button" id="media-audit-stop"><?php esc_html_e( 'Stop scan', 'upload-sleuth' ); ?></button><div><i></i></div><small><?php esc_html_e( 'Stopping preserves all findings completed through the latest batch.', 'upload-sleuth' ); ?></small></div>
 				<div class="media-audit-section-notice" data-notice-section="scan" aria-live="polite"></div>
 
 				<section id="media-audit-results" class="media-audit-results" hidden>
-					<div class="media-audit-results-head"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'LATEST RUN', 'media-audit' ); ?></p><div class="media-audit-title-line"><h2><?php esc_html_e( 'Audit results', 'media-audit' ); ?></h2><span id="media-audit-result-status" class="media-audit-status"></span></div><p id="media-audit-run-meta"></p></div><button type="button" class="button" id="media-audit-clear"><?php esc_html_e( 'Clear results', 'media-audit' ); ?></button></div><div id="media-audit-partial-warning" class="notice notice-warning inline" hidden><p><?php esc_html_e( 'This is a partial result. Only candidates processed before the scan stopped are listed; unprocessed files have not been classified.', 'media-audit' ); ?></p></div>
+					<div class="media-audit-results-head"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'LATEST RUN', 'upload-sleuth' ); ?></p><div class="media-audit-title-line"><h2><?php esc_html_e( 'Audit results', 'upload-sleuth' ); ?></h2><span id="media-audit-result-status" class="media-audit-status"></span></div><p id="media-audit-run-meta"></p></div><button type="button" class="button" id="media-audit-clear"><?php esc_html_e( 'Clear results', 'upload-sleuth' ); ?></button></div><div id="media-audit-partial-warning" class="notice notice-warning inline" hidden><p><?php esc_html_e( 'This is a partial result. Only candidates processed before the scan stopped are listed; unprocessed files have not been classified.', 'upload-sleuth' ); ?></p></div>
 					<div class="media-audit-stats" id="media-audit-stats"></div>
-					<div class="media-audit-toolbar"><label class="media-audit-search"><span class="dashicons dashicons-search"></span><input type="search" id="media-audit-filter" placeholder="<?php esc_attr_e( 'Filter by path, type, or reason…', 'media-audit' ); ?>" /></label><label><?php esc_html_e( 'Sort', 'media-audit' ); ?><select id="media-audit-sort"><option value="path"><?php esc_html_e( 'Path', 'media-audit' ); ?></option><option value="size_desc"><?php esc_html_e( 'Largest first', 'media-audit' ); ?></option><option value="modified_desc"><?php esc_html_e( 'Newest first', 'media-audit' ); ?></option><option value="modified_asc"><?php esc_html_e( 'Oldest first', 'media-audit' ); ?></option></select></label><span id="media-audit-selection-count"></span></div>
-					<div class="media-audit-table-wrap"><table class="widefat striped"><thead><tr><td class="check-column"><input type="checkbox" id="media-audit-select-all" aria-label="<?php esc_attr_e( 'Select all visible files', 'media-audit' ); ?>" /></td><th><?php esc_html_e( 'File', 'media-audit' ); ?></th><th><?php esc_html_e( 'Size', 'media-audit' ); ?></th><th><?php esc_html_e( 'Modified (UTC)', 'media-audit' ); ?></th><th><?php esc_html_e( 'Finding', 'media-audit' ); ?></th></tr></thead><tbody id="media-audit-result-rows"></tbody></table></div>
-					<div id="media-audit-table-footer" class="media-audit-table-footer" hidden><span id="media-audit-table-status"></span><button type="button" class="button button-small" id="media-audit-load-more"><?php esc_html_e( 'Load more', 'media-audit' ); ?></button></div>
+					<div class="media-audit-toolbar"><label class="media-audit-search"><span class="dashicons dashicons-search"></span><input type="search" id="media-audit-filter" placeholder="<?php esc_attr_e( 'Filter by path, type, or reason…', 'upload-sleuth' ); ?>" /></label><label><?php esc_html_e( 'Sort', 'upload-sleuth' ); ?><select id="media-audit-sort"><option value="path"><?php esc_html_e( 'Path', 'upload-sleuth' ); ?></option><option value="size_desc"><?php esc_html_e( 'Largest first', 'upload-sleuth' ); ?></option><option value="modified_desc"><?php esc_html_e( 'Newest first', 'upload-sleuth' ); ?></option><option value="modified_asc"><?php esc_html_e( 'Oldest first', 'upload-sleuth' ); ?></option></select></label><span id="media-audit-selection-count"></span></div>
+					<div class="media-audit-table-wrap"><table class="widefat striped"><thead><tr><td class="check-column"><input type="checkbox" id="media-audit-select-all" aria-label="<?php esc_attr_e( 'Select all visible files', 'upload-sleuth' ); ?>" /></td><th><?php esc_html_e( 'File', 'upload-sleuth' ); ?></th><th><?php esc_html_e( 'Size', 'upload-sleuth' ); ?></th><th><?php esc_html_e( 'Modified (UTC)', 'upload-sleuth' ); ?></th><th><?php esc_html_e( 'Finding', 'upload-sleuth' ); ?></th></tr></thead><tbody id="media-audit-result-rows"></tbody></table></div>
+					<div id="media-audit-table-footer" class="media-audit-table-footer" hidden><span id="media-audit-table-status"></span><button type="button" class="button button-small" id="media-audit-load-more"><?php esc_html_e( 'Load more', 'upload-sleuth' ); ?></button></div>
 					<div id="media-audit-empty" class="media-audit-empty" hidden></div>
-					<div class="media-audit-action-bar"><label><input type="checkbox" id="media-audit-dry-run" /> <?php esc_html_e( 'Dry run only', 'media-audit' ); ?></label><div><button type="button" class="button" data-file-action="quarantine" title="<?php esc_attr_e( 'Move files out of their public uploads paths while keeping them available for restoration.', 'media-audit' ); ?>"><span class="dashicons dashicons-archive"></span><?php esc_html_e( 'Move to quarantine', 'media-audit' ); ?></button><button type="button" class="button" data-file-action="backup-delete"><span class="dashicons dashicons-download"></span><?php esc_html_e( 'Download ZIP & remove', 'media-audit' ); ?></button><button type="button" class="button media-audit-delete" data-file-action="delete"><span class="dashicons dashicons-trash"></span><?php esc_html_e( 'Delete selected', 'media-audit' ); ?></button><button type="button" class="button media-audit-delete" data-file-action="delete" data-file-scope="all"><span class="dashicons dashicons-trash"></span><?php esc_html_e( 'Delete all findings', 'media-audit' ); ?></button></div></div>
-					<p class="media-audit-action-help"><?php esc_html_e( 'Quarantine moves files out of their original uploads paths without deleting them. They can be restored below if the original path is still available.', 'media-audit' ); ?></p>
+					<div class="media-audit-action-bar"><label><input type="checkbox" id="media-audit-dry-run" /> <?php esc_html_e( 'Dry run only', 'upload-sleuth' ); ?></label><div><button type="button" class="button" data-file-action="quarantine" title="<?php esc_attr_e( 'Move files out of their public uploads paths while keeping them available for restoration.', 'upload-sleuth' ); ?>"><span class="dashicons dashicons-archive"></span><?php esc_html_e( 'Move to quarantine', 'upload-sleuth' ); ?></button><button type="button" class="button" data-file-action="backup-delete"><span class="dashicons dashicons-download"></span><?php esc_html_e( 'Download ZIP & remove', 'upload-sleuth' ); ?></button><button type="button" class="button media-audit-delete" data-file-action="delete"><span class="dashicons dashicons-trash"></span><?php esc_html_e( 'Delete selected', 'upload-sleuth' ); ?></button><button type="button" class="button media-audit-delete" data-file-action="delete" data-file-scope="all"><span class="dashicons dashicons-trash"></span><?php esc_html_e( 'Delete all findings', 'upload-sleuth' ); ?></button></div></div>
+					<p class="media-audit-action-help"><?php esc_html_e( 'Quarantine moves files out of their original uploads paths without deleting them. They can be restored below if the original path is still available.', 'upload-sleuth' ); ?></p>
 					<?php
 					if ( empty( $settings['revalidate_actions'] ) ) :
 						?>
-						<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Reference revalidation is disabled.', 'media-audit' ); ?></strong> <?php esc_html_e( 'Actions still validate saved findings and safe uploads paths, but references added after the scan will not be detected.', 'media-audit' ); ?></p></div><?php endif; ?>
+						<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Reference revalidation is disabled.', 'upload-sleuth' ); ?></strong> <?php esc_html_e( 'Actions still validate saved findings and safe uploads paths, but references added after the scan will not be detected.', 'upload-sleuth' ); ?></p></div><?php endif; ?>
 					<div id="media-audit-action-progress" class="media-audit-operation-progress" hidden aria-live="polite"><span class="spinner is-active"></span><div><strong></strong><small></small></div><i></i></div>
 					<div id="media-audit-action-results" hidden></div>
 				</section>
-				<section class="media-audit-card media-audit-quarantine-panel" aria-labelledby="media-audit-quarantine-title"><div class="media-audit-quarantine-head"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'RECOVERY', 'media-audit' ); ?></p><h2 id="media-audit-quarantine-title"><?php esc_html_e( 'Quarantined files', 'media-audit' ); ?></h2><p><?php esc_html_e( 'Restore files to their original uploads paths or permanently remove them. Existing files are never overwritten.', 'media-audit' ); ?></p></div><div class="media-audit-quarantine-actions"><button type="button" class="button" id="media-audit-refresh-quarantine"><?php esc_html_e( 'Refresh', 'media-audit' ); ?></button><button type="button" class="button media-audit-delete" id="media-audit-delete-quarantine-selected" disabled><?php esc_html_e( 'Delete selected', 'media-audit' ); ?></button><button type="button" class="button media-audit-delete" id="media-audit-delete-quarantine-all" disabled><?php esc_html_e( 'Delete all', 'media-audit' ); ?></button></div></div><div class="media-audit-section-notice" data-notice-section="quarantine" aria-live="polite"></div><div id="media-audit-quarantine-progress" class="media-audit-operation-progress" hidden aria-live="polite"><span class="spinner is-active"></span><div><strong></strong><small><?php esc_html_e( 'Please keep this page open until the operation finishes.', 'media-audit' ); ?></small></div><i></i></div><div id="media-audit-quarantine-content"><p class="description"><?php esc_html_e( 'Loading quarantined files…', 'media-audit' ); ?></p></div></section>
+				<section class="media-audit-card media-audit-quarantine-panel" aria-labelledby="media-audit-quarantine-title"><div class="media-audit-quarantine-head"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'RECOVERY', 'upload-sleuth' ); ?></p><h2 id="media-audit-quarantine-title"><?php esc_html_e( 'Quarantined files', 'upload-sleuth' ); ?></h2><p><?php esc_html_e( 'Restore files to their original uploads paths or permanently remove them. Existing files are never overwritten.', 'upload-sleuth' ); ?></p></div><div class="media-audit-quarantine-actions"><button type="button" class="button" id="media-audit-refresh-quarantine"><?php esc_html_e( 'Refresh', 'upload-sleuth' ); ?></button><button type="button" class="button media-audit-delete" id="media-audit-delete-quarantine-selected" disabled><?php esc_html_e( 'Delete selected', 'upload-sleuth' ); ?></button><button type="button" class="button media-audit-delete" id="media-audit-delete-quarantine-all" disabled><?php esc_html_e( 'Delete all', 'upload-sleuth' ); ?></button></div></div><div class="media-audit-section-notice" data-notice-section="quarantine" aria-live="polite"></div><div id="media-audit-quarantine-progress" class="media-audit-operation-progress" hidden aria-live="polite"><span class="spinner is-active"></span><div><strong></strong><small><?php esc_html_e( 'Please keep this page open until the operation finishes.', 'upload-sleuth' ); ?></small></div><i></i></div><div id="media-audit-quarantine-content"><p class="description"><?php esc_html_e( 'Loading quarantined files…', 'upload-sleuth' ); ?></p></div></section>
 			</section>
 
 			<section class="media-audit-panel" data-panel="integrity">
 				<section class="media-audit-card media-audit-integrity-intro" aria-labelledby="media-audit-integrity-title">
 					<div class="media-audit-integrity-head">
-						<div><p class="media-audit-eyebrow"><?php esc_html_e( 'DATABASE HYGIENE', 'media-audit' ); ?></p><h2 id="media-audit-integrity-title"><?php esc_html_e( 'Media Library integrity', 'media-audit' ); ?></h2><p><?php esc_html_e( 'Find attachment records whose local original file is missing, plus generated image sizes that are absent while their original still exists.', 'media-audit' ); ?></p></div>
-						<div class="media-audit-integrity-run-actions"><button type="button" class="button button-primary" id="media-audit-integrity-run"><span class="dashicons dashicons-update"></span><?php esc_html_e( 'Check Media Library', 'media-audit' ); ?></button><button type="button" class="button" id="media-audit-integrity-stop" hidden><?php esc_html_e( 'Stop check', 'media-audit' ); ?></button></div>
+						<div><p class="media-audit-eyebrow"><?php esc_html_e( 'DATABASE HYGIENE', 'upload-sleuth' ); ?></p><h2 id="media-audit-integrity-title"><?php esc_html_e( 'Media Library integrity', 'upload-sleuth' ); ?></h2><p><?php esc_html_e( 'Find attachment records whose local original file is missing, plus generated image sizes that are absent while their original still exists.', 'upload-sleuth' ); ?></p></div>
+						<div class="media-audit-integrity-run-actions"><button type="button" class="button button-primary" id="media-audit-integrity-run"><span class="dashicons dashicons-update"></span><?php esc_html_e( 'Check Media Library', 'upload-sleuth' ); ?></button><button type="button" class="button" id="media-audit-integrity-stop" hidden><?php esc_html_e( 'Stop check', 'upload-sleuth' ); ?></button></div>
 					</div>
 					<div class="media-audit-section-notice" data-notice-section="integrity" aria-live="polite"></div>
-					<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Using offloaded media?', 'media-audit' ); ?></strong> <?php esc_html_e( 'S3, CDN, and other offload plugins may intentionally remove local files. Do not delete reported attachment records until you have confirmed they are not valid remote media.', 'media-audit' ); ?></p></div>
-					<div id="media-audit-integrity-progress" class="media-audit-operation-progress" hidden aria-live="polite"><span class="spinner is-active"></span><div><strong></strong><small><?php esc_html_e( 'Please keep this page open until the current operation finishes.', 'media-audit' ); ?></small></div><i></i></div>
+					<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Using offloaded media?', 'upload-sleuth' ); ?></strong> <?php esc_html_e( 'S3, CDN, and other offload plugins may intentionally remove local files. Do not delete reported attachment records until you have confirmed they are not valid remote media.', 'upload-sleuth' ); ?></p></div>
+					<div id="media-audit-integrity-progress" class="media-audit-operation-progress" hidden aria-live="polite"><span class="spinner is-active"></span><div><strong></strong><small><?php esc_html_e( 'Please keep this page open until the current operation finishes.', 'upload-sleuth' ); ?></small></div><i></i></div>
 				</section>
 
 				<section id="media-audit-integrity-results" class="media-audit-card media-audit-integrity-results" hidden>
-					<div class="media-audit-integrity-results-head"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'LATEST CHECK', 'media-audit' ); ?></p><h2><?php esc_html_e( 'Integrity results', 'media-audit' ); ?></h2><p id="media-audit-integrity-meta"></p></div></div>
+					<div class="media-audit-integrity-results-head"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'LATEST CHECK', 'upload-sleuth' ); ?></p><h2><?php esc_html_e( 'Integrity results', 'upload-sleuth' ); ?></h2><p id="media-audit-integrity-meta"></p></div></div>
 					<div id="media-audit-integrity-stats" class="media-audit-stats media-audit-integrity-stats"></div>
 
-					<div class="media-audit-integrity-section-head"><div><h3><?php esc_html_e( 'Missing local originals', 'media-audit' ); ?></h3><p><?php esc_html_e( 'These database records can be removed through WordPress after review. The original is checked again immediately before deletion.', 'media-audit' ); ?></p></div><span id="media-audit-integrity-selection"></span></div>
-					<div class="media-audit-table-wrap media-audit-integrity-table-wrap"><table class="widefat striped"><thead><tr><td class="check-column"><input type="checkbox" id="media-audit-integrity-select-all" aria-label="<?php esc_attr_e( 'Select all missing-original records shown', 'media-audit' ); ?>" /></td><th><?php esc_html_e( 'Attachment', 'media-audit' ); ?></th><th><?php esc_html_e( 'Expected file', 'media-audit' ); ?></th><th><?php esc_html_e( 'Remaining local files', 'media-audit' ); ?></th></tr></thead><tbody id="media-audit-integrity-rows"></tbody></table></div><div id="media-audit-integrity-footer" class="media-audit-table-footer" hidden><span id="media-audit-integrity-row-status"></span><button type="button" class="button button-small" id="media-audit-integrity-load-more"><?php esc_html_e( 'Load more', 'media-audit' ); ?></button></div>
-					<div id="media-audit-integrity-empty" class="media-audit-empty" hidden><?php esc_html_e( 'No attachment records with missing local originals were found.', 'media-audit' ); ?></div>
-					<div class="media-audit-integrity-actions"><p><?php esc_html_e( 'Deletion uses wp_delete_attachment(), so WordPress hooks, metadata cleanup, and removal of known generated files are honored.', 'media-audit' ); ?></p><div><button type="button" class="button media-audit-delete" id="media-audit-integrity-delete-selected" disabled><?php esc_html_e( 'Delete selected records', 'media-audit' ); ?></button><button type="button" class="button media-audit-delete" id="media-audit-integrity-delete-all" disabled><?php esc_html_e( 'Delete all missing records', 'media-audit' ); ?></button></div></div>
+					<div class="media-audit-integrity-section-head"><div><h3><?php esc_html_e( 'Missing local originals', 'upload-sleuth' ); ?></h3><p><?php esc_html_e( 'These database records can be removed through WordPress after review. The original is checked again immediately before deletion.', 'upload-sleuth' ); ?></p></div><span id="media-audit-integrity-selection"></span></div>
+					<div class="media-audit-table-wrap media-audit-integrity-table-wrap"><table class="widefat striped"><thead><tr><td class="check-column"><input type="checkbox" id="media-audit-integrity-select-all" aria-label="<?php esc_attr_e( 'Select all missing-original records shown', 'upload-sleuth' ); ?>" /></td><th><?php esc_html_e( 'Attachment', 'upload-sleuth' ); ?></th><th><?php esc_html_e( 'Expected file', 'upload-sleuth' ); ?></th><th><?php esc_html_e( 'Remaining local files', 'upload-sleuth' ); ?></th></tr></thead><tbody id="media-audit-integrity-rows"></tbody></table></div><div id="media-audit-integrity-footer" class="media-audit-table-footer" hidden><span id="media-audit-integrity-row-status"></span><button type="button" class="button button-small" id="media-audit-integrity-load-more"><?php esc_html_e( 'Load more', 'upload-sleuth' ); ?></button></div>
+					<div id="media-audit-integrity-empty" class="media-audit-empty" hidden><?php esc_html_e( 'No attachment records with missing local originals were found.', 'upload-sleuth' ); ?></div>
+					<div class="media-audit-integrity-actions"><p><?php esc_html_e( 'Deletion uses wp_delete_attachment(), so WordPress hooks, metadata cleanup, and removal of known generated files are honored.', 'upload-sleuth' ); ?></p><div><button type="button" class="button media-audit-delete" id="media-audit-integrity-delete-selected" disabled><?php esc_html_e( 'Delete selected records', 'upload-sleuth' ); ?></button><button type="button" class="button media-audit-delete" id="media-audit-integrity-delete-all" disabled><?php esc_html_e( 'Delete all missing records', 'upload-sleuth' ); ?></button></div></div>
 					<div id="media-audit-integrity-action-results" hidden></div>
 
-					<div class="media-audit-integrity-section-head media-audit-integrity-variants-head"><div><h3><?php esc_html_e( 'Missing generated files', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Report only: the original exists, but one or more sizes recorded in attachment metadata do not. Regenerate thumbnails after confirming the source image is healthy.', 'media-audit' ); ?></p></div></div>
-					<div class="media-audit-table-wrap media-audit-integrity-table-wrap"><table class="widefat striped"><thead><tr><th><?php esc_html_e( 'Attachment', 'media-audit' ); ?></th><th><?php esc_html_e( 'Original', 'media-audit' ); ?></th><th><?php esc_html_e( 'Missing generated files', 'media-audit' ); ?></th></tr></thead><tbody id="media-audit-integrity-variant-rows"></tbody></table></div><div id="media-audit-integrity-variant-footer" class="media-audit-table-footer" hidden><span id="media-audit-integrity-variant-status"></span><button type="button" class="button button-small" id="media-audit-integrity-variant-load-more"><?php esc_html_e( 'Load more', 'media-audit' ); ?></button></div>
-					<div id="media-audit-integrity-variants-empty" class="media-audit-empty" hidden><?php esc_html_e( 'No missing generated files were found.', 'media-audit' ); ?></div>
+					<div class="media-audit-integrity-section-head media-audit-integrity-variants-head"><div><h3><?php esc_html_e( 'Missing generated files', 'upload-sleuth' ); ?></h3><p><?php esc_html_e( 'Report only: the original exists, but one or more sizes recorded in attachment metadata do not. Regenerate thumbnails after confirming the source image is healthy.', 'upload-sleuth' ); ?></p></div></div>
+					<div class="media-audit-table-wrap media-audit-integrity-table-wrap"><table class="widefat striped"><thead><tr><th><?php esc_html_e( 'Attachment', 'upload-sleuth' ); ?></th><th><?php esc_html_e( 'Original', 'upload-sleuth' ); ?></th><th><?php esc_html_e( 'Missing generated files', 'upload-sleuth' ); ?></th></tr></thead><tbody id="media-audit-integrity-variant-rows"></tbody></table></div><div id="media-audit-integrity-variant-footer" class="media-audit-table-footer" hidden><span id="media-audit-integrity-variant-status"></span><button type="button" class="button button-small" id="media-audit-integrity-variant-load-more"><?php esc_html_e( 'Load more', 'upload-sleuth' ); ?></button></div>
+					<div id="media-audit-integrity-variants-empty" class="media-audit-empty" hidden><?php esc_html_e( 'No missing generated files were found.', 'upload-sleuth' ); ?></div>
 				</section>
 			</section>
 
-			<section class="media-audit-panel" data-panel="settings"><div class="media-audit-card media-audit-settings-card"><div class="media-audit-section-notice" data-notice-section="settings" aria-live="polite"><?php settings_errors( self::OPTION_KEY ); ?></div><h2><?php esc_html_e( 'Reference and safety settings', 'media-audit' ); ?></h2><form method="post" action="options.php"><?php settings_fields( 'media_audit_settings_group' ); ?><label><span><?php esc_html_e( 'Ignore patterns', 'media-audit' ); ?></span><textarea name="<?php echo esc_attr( self::OPTION_KEY ); ?>[ignore_patterns]" rows="8" class="large-text code"><?php echo esc_textarea( (string) $settings['ignore_patterns'] ); ?></textarea><small><?php esc_html_e( 'One glob per line, for example: cache/*, tmp/, *.webp', 'media-audit' ); ?></small></label><label><span><?php esc_html_e( 'Custom table checks', 'media-audit' ); ?></span><input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[custom_tables]" value="<?php echo esc_attr( (string) $settings['custom_tables'] ); ?>" class="large-text code" /><small><?php esc_html_e( 'Comma-separated table:column pairs. The current WordPress prefix can be omitted.', 'media-audit' ); ?></small></label><label><span><?php esc_html_e( 'Quarantine directory', 'media-audit' ); ?></span><input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[quarantine_dir]" value="<?php echo esc_attr( (string) $settings['quarantine_dir'] ); ?>" class="regular-text code" /><small><?php esc_html_e( 'A relative path under uploads.', 'media-audit' ); ?></small></label><label class="media-audit-check"><input type="checkbox" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[scan_all_tables]" value="1" <?php checked( (int) $settings['scan_all_tables'], 1 ); ?> /><span><strong><?php esc_html_e( 'Scan all non-core tables', 'media-audit' ); ?></strong><small><?php esc_html_e( 'Checks text-like columns automatically. Accurate but potentially slow.', 'media-audit' ); ?></small></span></label><h3><?php esc_html_e( 'Slow-server and browser tuning', 'media-audit' ); ?></h3><div class="media-audit-tuning-grid"><label><span><?php esc_html_e( 'Scan batch size', 'media-audit' ); ?></span><input type="number" min="1" max="100" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[scan_batch_size]" value="<?php echo esc_attr( (string) $settings['scan_batch_size'] ); ?>" /><small><?php esc_html_e( 'Candidates checked per scan request. Lower this if scans time out.', 'media-audit' ); ?></small></label><label><span><?php esc_html_e( 'File-action batch size', 'media-audit' ); ?></span><input type="number" min="1" max="100" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[action_batch_size]" value="<?php echo esc_attr( (string) $settings['action_batch_size'] ); ?>" /><small><?php esc_html_e( 'Files deleted or quarantined per request.', 'media-audit' ); ?></small></label><label><span><?php esc_html_e( 'Pause between batches (ms)', 'media-audit' ); ?></span><input type="number" min="0" max="3000" step="50" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[action_delay_ms]" value="<?php echo esc_attr( (string) $settings['action_delay_ms'] ); ?>" /><small><?php esc_html_e( 'A short pause reduces sustained load on slower servers.', 'media-audit' ); ?></small></label><label><span><?php esc_html_e( 'Rows rendered per view', 'media-audit' ); ?></span><input type="number" min="50" max="1000" step="50" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[ui_row_batch_size]" value="<?php echo esc_attr( (string) $settings['ui_row_batch_size'] ); ?>" /><small><?php esc_html_e( 'Lower values reduce browser memory and layout work for long lists.', 'media-audit' ); ?></small></label></div><label class="media-audit-check media-audit-warning-check"><input type="checkbox" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[revalidate_actions]" value="1" <?php checked( (int) $settings['revalidate_actions'], 1 ); ?> /><span><strong><?php esc_html_e( 'Revalidate references before file actions', 'media-audit' ); ?></strong><small><?php esc_html_e( 'Recommended. Disable only when speed is more important than detecting references added since the scan. Path and saved-finding checks still apply.', 'media-audit' ); ?></small></span></label><label class="media-audit-check"><input type="checkbox" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[console_diagnostics]" value="1" <?php checked( (int) $settings['console_diagnostics'], 1 ); ?> /><span><strong><?php esc_html_e( 'Browser console diagnostics', 'media-audit' ); ?></strong><small><?php esc_html_e( 'Off by default. Enable temporarily to log scan batches, heartbeats, errors, and capped file-action samples in browser developer tools.', 'media-audit' ); ?></small></span></label><?php submit_button( __( 'Save settings', 'media-audit' ) ); ?></form></div></section>
+			<section class="media-audit-panel" data-panel="settings"><div class="media-audit-card media-audit-settings-card"><div class="media-audit-section-notice" data-notice-section="settings" aria-live="polite"><?php settings_errors( self::OPTION_KEY ); ?></div><h2><?php esc_html_e( 'Reference and safety settings', 'upload-sleuth' ); ?></h2><form method="post" action="options.php"><?php settings_fields( 'media_audit_settings_group' ); ?><label><span><?php esc_html_e( 'Ignore patterns', 'upload-sleuth' ); ?></span><textarea name="<?php echo esc_attr( self::OPTION_KEY ); ?>[ignore_patterns]" rows="8" class="large-text code"><?php echo esc_textarea( (string) $settings['ignore_patterns'] ); ?></textarea><small><?php esc_html_e( 'One glob per line, for example: cache/*, tmp/, *.webp', 'upload-sleuth' ); ?></small></label><label><span><?php esc_html_e( 'Custom table checks', 'upload-sleuth' ); ?></span><input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[custom_tables]" value="<?php echo esc_attr( (string) $settings['custom_tables'] ); ?>" class="large-text code" /><small><?php esc_html_e( 'Comma-separated table:column pairs. The current WordPress prefix can be omitted.', 'upload-sleuth' ); ?></small></label><label><span><?php esc_html_e( 'Quarantine directory', 'upload-sleuth' ); ?></span><input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[quarantine_dir]" value="<?php echo esc_attr( (string) $settings['quarantine_dir'] ); ?>" class="regular-text code" /><small><?php esc_html_e( 'Always stored below the dedicated uploads/upload-sleuth directory.', 'upload-sleuth' ); ?></small></label><label class="media-audit-check"><input type="checkbox" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[scan_all_tables]" value="1" <?php checked( (int) $settings['scan_all_tables'], 1 ); ?> /><span><strong><?php esc_html_e( 'Scan all non-core tables', 'upload-sleuth' ); ?></strong><small><?php esc_html_e( 'Checks text-like columns automatically. Accurate but potentially slow.', 'upload-sleuth' ); ?></small></span></label><h3><?php esc_html_e( 'Slow-server and browser tuning', 'upload-sleuth' ); ?></h3><div class="media-audit-tuning-grid"><label><span><?php esc_html_e( 'Scan batch size', 'upload-sleuth' ); ?></span><input type="number" min="1" max="100" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[scan_batch_size]" value="<?php echo esc_attr( (string) $settings['scan_batch_size'] ); ?>" /><small><?php esc_html_e( 'Candidates checked per scan request. Lower this if scans time out.', 'upload-sleuth' ); ?></small></label><label><span><?php esc_html_e( 'File-action batch size', 'upload-sleuth' ); ?></span><input type="number" min="1" max="100" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[action_batch_size]" value="<?php echo esc_attr( (string) $settings['action_batch_size'] ); ?>" /><small><?php esc_html_e( 'Files deleted or quarantined per request.', 'upload-sleuth' ); ?></small></label><label><span><?php esc_html_e( 'Pause between batches (ms)', 'upload-sleuth' ); ?></span><input type="number" min="0" max="3000" step="50" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[action_delay_ms]" value="<?php echo esc_attr( (string) $settings['action_delay_ms'] ); ?>" /><small><?php esc_html_e( 'A short pause reduces sustained load on slower servers.', 'upload-sleuth' ); ?></small></label><label><span><?php esc_html_e( 'Rows rendered per view', 'upload-sleuth' ); ?></span><input type="number" min="50" max="1000" step="50" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[ui_row_batch_size]" value="<?php echo esc_attr( (string) $settings['ui_row_batch_size'] ); ?>" /><small><?php esc_html_e( 'Lower values reduce browser memory and layout work for long lists.', 'upload-sleuth' ); ?></small></label></div><label class="media-audit-check media-audit-warning-check"><input type="checkbox" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[revalidate_actions]" value="1" <?php checked( (int) $settings['revalidate_actions'], 1 ); ?> /><span><strong><?php esc_html_e( 'Revalidate references before file actions', 'upload-sleuth' ); ?></strong><small><?php esc_html_e( 'Recommended. Disable only when speed is more important than detecting references added since the scan. Path and saved-finding checks still apply.', 'upload-sleuth' ); ?></small></span></label><label class="media-audit-check"><input type="checkbox" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[console_diagnostics]" value="1" <?php checked( (int) $settings['console_diagnostics'], 1 ); ?> /><span><strong><?php esc_html_e( 'Browser console diagnostics', 'upload-sleuth' ); ?></strong><small><?php esc_html_e( 'Off by default. Enable temporarily to log scan batches, heartbeats, errors, and capped file-action samples in browser developer tools.', 'upload-sleuth' ); ?></small></span></label><?php submit_button( __( 'Save settings', 'upload-sleuth' ) ); ?></form></div></section>
 
 			<section class="media-audit-panel" data-panel="cli"><?php self::render_cli_reference(); ?></section>
 
@@ -320,51 +320,51 @@ class Media_Audit_Admin_Page {
 		<div class="media-audit-card media-audit-help">
 			<div class="media-audit-help-heading">
 				<div>
-					<p class="media-audit-eyebrow"><?php esc_html_e( 'GUIDED OVERVIEW', 'media-audit' ); ?></p>
-					<h2><?php esc_html_e( 'How Media Audit builds its findings', 'media-audit' ); ?></h2>
-					<p><?php esc_html_e( 'Media Audit narrows the files in WordPress uploads by checking Media Library metadata and database references. Anything left is a review candidate, not proof that a file is unused.', 'media-audit' ); ?></p>
+					<p class="media-audit-eyebrow"><?php esc_html_e( 'GUIDED OVERVIEW', 'upload-sleuth' ); ?></p>
+					<h2><?php esc_html_e( 'How UploadSleuth builds its findings', 'upload-sleuth' ); ?></h2>
+					<p><?php esc_html_e( 'UploadSleuth narrows the files in WordPress uploads by checking Media Library metadata and database references. Anything left is a review candidate, not proof that a file is unused.', 'upload-sleuth' ); ?></p>
 				</div>
 				<span class="dashicons dashicons-editor-help" aria-hidden="true"></span>
 			</div>
 
 			<div class="media-audit-steps">
-				<div><b>1</b><h3><?php esc_html_e( 'Choose the scope', 'media-audit' ); ?></h3><p><?php esc_html_e( 'The scan stays inside the WordPress uploads directory, or the uploads subdirectory you enter. Ignore rules and the quarantine directory are excluded.', 'media-audit' ); ?></p></div>
-				<div><b>2</b><h3><?php esc_html_e( 'Inventory files', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Eligible files are counted and basic details such as relative path, size, type, and modified time are collected.', 'media-audit' ); ?></p></div>
-				<div><b>3</b><h3><?php esc_html_e( 'Match the Media Library', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Attachment originals, generated image sizes, edited copies, and recorded backup sizes are indexed. Matches are removed from the candidate list.', 'media-audit' ); ?></p></div>
-				<div><b>4</b><h3><?php esc_html_e( 'Search references', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Unless Fast scan is enabled, remaining paths and URLs are searched in core content, metadata, options, and configured custom tables.', 'media-audit' ); ?></p></div>
-				<div><b>5</b><h3><?php esc_html_e( 'Review candidates', 'media-audit' ); ?></h3><p><?php esc_html_e( 'Files with no detected match are shown as likely stray. Review them before running a dry run, quarantine, backup, or deletion.', 'media-audit' ); ?></p></div>
+				<div><b>1</b><h3><?php esc_html_e( 'Choose the scope', 'upload-sleuth' ); ?></h3><p><?php esc_html_e( 'The scan stays inside the WordPress uploads directory, or the uploads subdirectory you enter. Ignore rules and the quarantine directory are excluded.', 'upload-sleuth' ); ?></p></div>
+				<div><b>2</b><h3><?php esc_html_e( 'Inventory files', 'upload-sleuth' ); ?></h3><p><?php esc_html_e( 'Eligible files are counted and basic details such as relative path, size, type, and modified time are collected.', 'upload-sleuth' ); ?></p></div>
+				<div><b>3</b><h3><?php esc_html_e( 'Match the Media Library', 'upload-sleuth' ); ?></h3><p><?php esc_html_e( 'Attachment originals, generated image sizes, edited copies, and recorded backup sizes are indexed. Matches are removed from the candidate list.', 'upload-sleuth' ); ?></p></div>
+				<div><b>4</b><h3><?php esc_html_e( 'Search references', 'upload-sleuth' ); ?></h3><p><?php esc_html_e( 'Unless Fast scan is enabled, remaining paths and URLs are searched in core content, metadata, options, and configured custom tables.', 'upload-sleuth' ); ?></p></div>
+				<div><b>5</b><h3><?php esc_html_e( 'Review candidates', 'upload-sleuth' ); ?></h3><p><?php esc_html_e( 'Files with no detected match are shown as likely stray. Review them before running a dry run, quarantine, backup, or deletion.', 'upload-sleuth' ); ?></p></div>
 			</div>
 
 			<div class="media-audit-help-grid">
 				<section>
-					<h3><?php esc_html_e( 'Understanding the result', 'media-audit' ); ?></h3>
+					<h3><?php esc_html_e( 'Understanding the result', 'upload-sleuth' ); ?></h3>
 					<dl class="media-audit-help-definitions">
-						<div><dt><?php esc_html_e( 'Not in attachment metadata', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'The file was not matched to a Media Library record. This appears when Fast scan skips the broader database search.', 'media-audit' ); ?></dd></div>
-						<div><dt><?php esc_html_e( 'No attachment/database reference found', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'The full scan found neither a Media Library match nor a textual reference in the database locations that were checked.', 'media-audit' ); ?></dd></div>
-						<div><dt><?php esc_html_e( 'Partial findings', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'The scan was stopped. Completed batches are preserved, but files not yet processed have not been classified.', 'media-audit' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Not in attachment metadata', 'upload-sleuth' ); ?></dt><dd><?php esc_html_e( 'The file was not matched to a Media Library record. This appears when Fast scan skips the broader database search.', 'upload-sleuth' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'No attachment/database reference found', 'upload-sleuth' ); ?></dt><dd><?php esc_html_e( 'The full scan found neither a Media Library match nor a textual reference in the database locations that were checked.', 'upload-sleuth' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Partial findings', 'upload-sleuth' ); ?></dt><dd><?php esc_html_e( 'The scan was stopped. Completed batches are preserved, but files not yet processed have not been classified.', 'upload-sleuth' ); ?></dd></div>
 					</dl>
 				</section>
 				<section>
-					<h3><?php esc_html_e( 'Choosing a file action', 'media-audit' ); ?></h3>
+					<h3><?php esc_html_e( 'Choosing a file action', 'upload-sleuth' ); ?></h3>
 					<dl class="media-audit-help-definitions">
-						<div><dt><?php esc_html_e( 'Move to quarantine', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'Moves files out of their public uploads paths. This is the safest first step because files can be restored from the dashboard.', 'media-audit' ); ?></dd></div>
-						<div><dt><?php esc_html_e( 'Download ZIP & remove', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'Builds a downloadable ZIP before removing the originals. Keep the archive somewhere safe until the site has been checked.', 'media-audit' ); ?></dd></div>
-						<div><dt><?php esc_html_e( 'Permanent deletion', 'media-audit' ); ?></dt><dd><?php esc_html_e( 'Removes files without a plugin restore path. Use it only after review and when you already have a reliable site backup.', 'media-audit' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Move to quarantine', 'upload-sleuth' ); ?></dt><dd><?php esc_html_e( 'Moves files out of their public uploads paths. This is the safest first step because files can be restored from the dashboard.', 'upload-sleuth' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Download ZIP & remove', 'upload-sleuth' ); ?></dt><dd><?php esc_html_e( 'Builds a downloadable ZIP before removing the originals. Keep the archive somewhere safe until the site has been checked.', 'upload-sleuth' ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Permanent deletion', 'upload-sleuth' ); ?></dt><dd><?php esc_html_e( 'Removes files without a plugin restore path. Use it only after review and when you already have a reliable site backup.', 'upload-sleuth' ); ?></dd></div>
 					</dl>
 				</section>
 			</div>
 
 			<div class="media-audit-help-checklist">
-				<h3><?php esc_html_e( 'Before removing anything', 'media-audit' ); ?></h3>
+				<h3><?php esc_html_e( 'Before removing anything', 'upload-sleuth' ); ?></h3>
 				<ul>
-					<li><?php esc_html_e( 'Review unfamiliar paths and test a small selection first.', 'media-audit' ); ?></li>
-					<li><?php esc_html_e( 'Keep reference revalidation enabled when the site is actively changing.', 'media-audit' ); ?></li>
-					<li><?php esc_html_e( 'Check whether a theme, plugin, CDN, media offload service, or external system uses the files.', 'media-audit' ); ?></li>
-					<li><?php esc_html_e( 'Prefer quarantine and verify important pages before permanent deletion.', 'media-audit' ); ?></li>
+					<li><?php esc_html_e( 'Review unfamiliar paths and test a small selection first.', 'upload-sleuth' ); ?></li>
+					<li><?php esc_html_e( 'Keep reference revalidation enabled when the site is actively changing.', 'upload-sleuth' ); ?></li>
+					<li><?php esc_html_e( 'Check whether a theme, plugin, CDN, media offload service, or external system uses the files.', 'upload-sleuth' ); ?></li>
+					<li><?php esc_html_e( 'Prefer quarantine and verify important pages before permanent deletion.', 'upload-sleuth' ); ?></li>
 				</ul>
 			</div>
 
-			<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Important:', 'media-audit' ); ?></strong> <?php esc_html_e( 'Encoded data, dynamically constructed URLs, external services, custom database storage, and hardcoded references can evade detection. Findings always require human review.', 'media-audit' ); ?></p></div>
+			<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Important:', 'upload-sleuth' ); ?></strong> <?php esc_html_e( 'Encoded data, dynamically constructed URLs, external services, custom database storage, and hardcoded references can evade detection. Findings always require human review.', 'upload-sleuth' ); ?></p></div>
 		</div>
 		<?php
 	}
@@ -372,63 +372,63 @@ class Media_Audit_Admin_Page {
 	/** Render the complete WP-CLI command reference from maintained data maps. */
 	private static function render_cli_reference() {
 		$options  = array(
-			'--uploads-subdir=<path>' => __( 'Restrict the scan to a relative directory below uploads, such as 2026/08.', 'media-audit' ),
-			'--limit=<number>'        => __( 'Maximum candidates to database-check. Use 0 for unlimited.', 'media-audit' ),
-			'--min-size=<kb>'         => __( 'Only report candidates at least this many kilobytes.', 'media-audit' ),
-			'--older-than=<days>'     => __( 'Only report candidates older than this many days.', 'media-audit' ),
-			'--all-files'             => __( 'Include extensions outside the WordPress media MIME map.', 'media-audit' ),
-			'--skip-db-check'         => __( 'Skip textual database searches and use attachment metadata only.', 'media-audit' ),
-			'--ignore=<patterns>'     => __( 'Add comma-separated glob patterns.', 'media-audit' ),
-			'--ignore-file=<path>'    => __( 'Read newline-separated ignore patterns from a file.', 'media-audit' ),
-			'--custom-tables=<list>'  => __( 'Add comma-separated table:column reference checks.', 'media-audit' ),
-			'--scan-all-tables'       => __( 'Search detected text columns in all non-core tables.', 'media-audit' ),
-			'--format=<format>'       => __( 'Render findings as table, csv, json, or yaml.', 'media-audit' ),
-			'--summary-only'          => __( 'Print summary metrics without individual finding rows.', 'media-audit' ),
-			'--quarantine'            => __( 'Move findings into a timestamped quarantine directory.', 'media-audit' ),
-			'--backup-delete'         => __( 'Copy and SHA-256 verify findings, then remove originals.', 'media-audit' ),
-			'--delete'                => __( 'Permanently remove findings.', 'media-audit' ),
-			'--dry-run'               => __( 'Simulate the selected filesystem action.', 'media-audit' ),
-			'--yes'                   => __( 'Confirm a real backup-and-remove or permanent deletion.', 'media-audit' ),
-			'--quarantine-dir=<path>' => __( 'Override the relative safety directory below uploads.', 'media-audit' ),
-			'--fail-on-findings'      => __( 'Exit with status 1 when likely stray files are found.', 'media-audit' ),
+			'--uploads-subdir=<path>' => __( 'Restrict the scan to a relative directory below uploads, such as 2026/08.', 'upload-sleuth' ),
+			'--limit=<number>'        => __( 'Maximum candidates to database-check. Use 0 for unlimited.', 'upload-sleuth' ),
+			'--min-size=<kb>'         => __( 'Only report candidates at least this many kilobytes.', 'upload-sleuth' ),
+			'--older-than=<days>'     => __( 'Only report candidates older than this many days.', 'upload-sleuth' ),
+			'--all-files'             => __( 'Report extensions outside the WordPress media MIME map. File actions still reject them.', 'upload-sleuth' ),
+			'--skip-db-check'         => __( 'Skip textual database searches and use attachment metadata only.', 'upload-sleuth' ),
+			'--ignore=<patterns>'     => __( 'Add comma-separated glob patterns.', 'upload-sleuth' ),
+			'--ignore-file=<path>'    => __( 'Read newline-separated ignore patterns from a file.', 'upload-sleuth' ),
+			'--custom-tables=<list>'  => __( 'Add comma-separated table:column reference checks.', 'upload-sleuth' ),
+			'--scan-all-tables'       => __( 'Search detected text columns in all non-core tables.', 'upload-sleuth' ),
+			'--format=<format>'       => __( 'Render findings as table, csv, json, or yaml.', 'upload-sleuth' ),
+			'--summary-only'          => __( 'Print summary metrics without individual finding rows.', 'upload-sleuth' ),
+			'--quarantine'            => __( 'Move findings into a timestamped quarantine directory.', 'upload-sleuth' ),
+			'--backup-delete'         => __( 'Copy and SHA-256 verify findings, then remove originals.', 'upload-sleuth' ),
+			'--delete'                => __( 'Permanently remove findings.', 'upload-sleuth' ),
+			'--dry-run'               => __( 'Simulate the selected filesystem action.', 'upload-sleuth' ),
+			'--yes'                   => __( 'Confirm a real backup-and-remove or permanent deletion.', 'upload-sleuth' ),
+			'--quarantine-dir=<path>' => __( 'Choose an optional child directory below uploads/upload-sleuth.', 'upload-sleuth' ),
+			'--fail-on-findings'      => __( 'Exit with status 1 when likely stray files are found.', 'upload-sleuth' ),
 		);
 		$examples = array(
-			array( __( 'Standard audit', 'media-audit' ), 'wp gp media-audit' ),
-			array( __( 'Scan one year as JSON', 'media-audit' ), 'wp gp media-audit --uploads-subdir=2025 --format=json' ),
-			array( __( 'Find older, larger candidates', 'media-audit' ), 'wp gp media-audit --older-than=90 --min-size=100' ),
-			array( __( 'Use custom reference tables', 'media-audit' ), 'wp gp media-audit --custom-tables="plugin_assets:url,other_table:data"' ),
-			array( __( 'Load ignore rules from a file', 'media-audit' ), 'wp gp media-audit --ignore-file=/path/to/media-audit.ignore' ),
-			array( __( 'Fast attachment-only scan', 'media-audit' ), 'wp gp media-audit --skip-db-check --summary-only' ),
-			array( __( 'Preview quarantine', 'media-audit' ), 'wp gp media-audit --quarantine --dry-run' ),
-			array( __( 'Quarantine findings', 'media-audit' ), 'wp gp media-audit --quarantine' ),
-			array( __( 'Preview verified backup and removal', 'media-audit' ), 'wp gp media-audit --backup-delete --dry-run' ),
-			array( __( 'Run verified backup and removal', 'media-audit' ), 'wp gp media-audit --backup-delete --yes' ),
-			array( __( 'Preview permanent deletion', 'media-audit' ), 'wp gp media-audit --delete --dry-run' ),
-			array( __( 'Permanently delete findings', 'media-audit' ), 'wp gp media-audit --delete --yes' ),
-			array( __( 'CI or scheduled audit', 'media-audit' ), 'wp gp media-audit --summary-only --fail-on-findings' ),
-			array( __( 'Show built-in WP-CLI help', 'media-audit' ), 'wp help gp media-audit' ),
+			array( __( 'Standard audit', 'upload-sleuth' ), 'wp upload-sleuth' ),
+			array( __( 'Scan one year as JSON', 'upload-sleuth' ), 'wp upload-sleuth --uploads-subdir=2025 --format=json' ),
+			array( __( 'Find older, larger candidates', 'upload-sleuth' ), 'wp upload-sleuth --older-than=90 --min-size=100' ),
+			array( __( 'Use custom reference tables', 'upload-sleuth' ), 'wp upload-sleuth --custom-tables="plugin_assets:url,other_table:data"' ),
+			array( __( 'Load ignore rules from a file', 'upload-sleuth' ), 'wp upload-sleuth --ignore-file=/path/to/upload-sleuth.ignore' ),
+			array( __( 'Fast attachment-only scan', 'upload-sleuth' ), 'wp upload-sleuth --skip-db-check --summary-only' ),
+			array( __( 'Preview quarantine', 'upload-sleuth' ), 'wp upload-sleuth --quarantine --dry-run' ),
+			array( __( 'Quarantine findings', 'upload-sleuth' ), 'wp upload-sleuth --quarantine' ),
+			array( __( 'Preview verified backup and removal', 'upload-sleuth' ), 'wp upload-sleuth --backup-delete --dry-run' ),
+			array( __( 'Run verified backup and removal', 'upload-sleuth' ), 'wp upload-sleuth --backup-delete --yes' ),
+			array( __( 'Preview permanent deletion', 'upload-sleuth' ), 'wp upload-sleuth --delete --dry-run' ),
+			array( __( 'Permanently delete findings', 'upload-sleuth' ), 'wp upload-sleuth --delete --yes' ),
+			array( __( 'CI or scheduled audit', 'upload-sleuth' ), 'wp upload-sleuth --summary-only --fail-on-findings' ),
+			array( __( 'Show built-in WP-CLI help', 'upload-sleuth' ), 'wp help upload-sleuth' ),
 		);
 		?>
 		<div class="media-audit-card media-audit-cli">
-			<div class="media-audit-cli-heading"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'DEVELOPER REFERENCE', 'media-audit' ); ?></p><h2><?php esc_html_e( 'WP-CLI commands', 'media-audit' ); ?></h2><p><?php esc_html_e( 'Run audits, produce machine-readable reports, and perform guarded filesystem actions from the terminal.', 'media-audit' ); ?></p></div><span class="dashicons dashicons-editor-code"></span></div>
+			<div class="media-audit-cli-heading"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'DEVELOPER REFERENCE', 'upload-sleuth' ); ?></p><h2><?php esc_html_e( 'WP-CLI commands', 'upload-sleuth' ); ?></h2><p><?php esc_html_e( 'Run audits, produce machine-readable reports, and perform guarded filesystem actions from the terminal.', 'upload-sleuth' ); ?></p></div><span class="dashicons dashicons-editor-code"></span></div>
 			<div class="media-audit-section-notice" data-notice-section="cli" aria-live="polite"></div>
-			<div class="media-audit-cli-syntax"><span><?php esc_html_e( 'Base command', 'media-audit' ); ?></span><code>wp gp media-audit [options]</code><button type="button" class="button" data-copy-command="wp gp media-audit"><?php esc_html_e( 'Copy', 'media-audit' ); ?></button></div>
-			<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Safety:', 'media-audit' ); ?></strong> <?php esc_html_e( 'Use --dry-run first. Before every action, attachment metadata and database references are checked again. Files that are now referenced are blocked. --backup-delete and --delete require --yes when they make real changes.', 'media-audit' ); ?></p></div>
+			<div class="media-audit-cli-syntax"><span><?php esc_html_e( 'Base command', 'upload-sleuth' ); ?></span><code>wp upload-sleuth [options]</code><button type="button" class="button" data-copy-command="wp upload-sleuth"><?php esc_html_e( 'Copy', 'upload-sleuth' ); ?></button></div>
+			<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Safety:', 'upload-sleuth' ); ?></strong> <?php esc_html_e( 'Use --dry-run first. Before every action, attachment metadata and database references are checked again. Files that are now referenced are blocked. --backup-delete and --delete require --yes when they make real changes.', 'upload-sleuth' ); ?></p></div>
 
-			<h3><?php esc_html_e( 'All options', 'media-audit' ); ?></h3>
-			<div class="media-audit-cli-options"><table class="widefat striped"><thead><tr><th><?php esc_html_e( 'Option', 'media-audit' ); ?></th><th><?php esc_html_e( 'Description', 'media-audit' ); ?></th></tr></thead><tbody>
+			<h3><?php esc_html_e( 'All options', 'upload-sleuth' ); ?></h3>
+			<div class="media-audit-cli-options"><table class="widefat striped"><thead><tr><th><?php esc_html_e( 'Option', 'upload-sleuth' ); ?></th><th><?php esc_html_e( 'Description', 'upload-sleuth' ); ?></th></tr></thead><tbody>
 			<?php
 			foreach ( $options as $option => $description ) :
 				?>
 				<tr><td><code><?php echo esc_html( $option ); ?></code></td><td><?php echo esc_html( $description ); ?></td></tr><?php endforeach; ?></tbody></table></div>
 
-			<h3><?php esc_html_e( 'Copy-ready recipes', 'media-audit' ); ?></h3>
+			<h3><?php esc_html_e( 'Copy-ready recipes', 'upload-sleuth' ); ?></h3>
 			<div class="media-audit-cli-examples">
 			<?php
 			foreach ( $examples as $example ) :
 				?>
-				<div><span><?php echo esc_html( $example[0] ); ?></span><code><?php echo esc_html( $example[1] ); ?></code><button type="button" class="button button-small" data-copy-command="<?php echo esc_attr( $example[1] ); ?>"><?php esc_html_e( 'Copy', 'media-audit' ); ?></button></div><?php endforeach; ?></div>
-			<p class="description"><?php esc_html_e( 'Global WP-CLI parameters such as --path, --url, --user, --ssh, and --quiet may also be appended.', 'media-audit' ); ?></p>
+				<div><span><?php echo esc_html( $example[0] ); ?></span><code><?php echo esc_html( $example[1] ); ?></code><button type="button" class="button button-small" data-copy-command="<?php echo esc_attr( $example[1] ); ?>"><?php esc_html_e( 'Copy', 'upload-sleuth' ); ?></button></div><?php endforeach; ?></div>
+			<p class="description"><?php esc_html_e( 'Global WP-CLI parameters such as --path, --url, --user, --ssh, and --quiet may also be appended.', 'upload-sleuth' ); ?></p>
 		</div>
 		<?php
 	}
@@ -451,7 +451,7 @@ class Media_Audit_Admin_Page {
 		self::save_last_findings( $findings );
 		wp_send_json_success(
 			array(
-				'message'  => __( 'Audit complete.', 'media-audit' ),
+				'message'  => __( 'Audit complete.', 'upload-sleuth' ),
 				'findings' => $findings,
 			)
 		);
@@ -483,7 +483,7 @@ class Media_Audit_Admin_Page {
 
 		wp_send_json_success(
 			array(
-				'message'  => __( 'Scan inventory prepared.', 'media-audit' ),
+				'message'  => __( 'Scan inventory prepared.', 'upload-sleuth' ),
 				'token'    => $token,
 				'done'     => ! empty( $job['completed'] ),
 				'findings' => $findings,
@@ -503,7 +503,7 @@ class Media_Audit_Admin_Page {
 		$job_key = self::get_job_key( $token );
 		$job     = get_transient( $job_key );
 		if ( ! is_array( $job ) ) {
-			wp_send_json_error( array( 'message' => __( 'The scan job expired or was already stopped.', 'media-audit' ) ), 410 );
+			wp_send_json_error( array( 'message' => __( 'The scan job expired or was already stopped.', 'upload-sleuth' ) ), 410 );
 		}
 
 		$runner = new Media_Audit_CLI_Command();
@@ -530,7 +530,7 @@ class Media_Audit_Admin_Page {
 
 		wp_send_json_success(
 			array(
-				'message'  => ! empty( $job['stopped'] ) ? __( 'Scan stopped. Partial findings saved.', 'media-audit' ) : ( $done ? __( 'Audit complete.', 'media-audit' ) : __( 'Scan batch complete.', 'media-audit' ) ),
+				'message'  => ! empty( $job['stopped'] ) ? __( 'Scan stopped. Partial findings saved.', 'upload-sleuth' ) : ( $done ? __( 'Audit complete.', 'upload-sleuth' ) : __( 'Scan batch complete.', 'upload-sleuth' ) ),
 				'done'     => $done,
 				'stopped'  => ! empty( $job['stopped'] ),
 				'findings' => $findings,
@@ -553,7 +553,7 @@ class Media_Audit_Admin_Page {
 		if ( ! is_array( $job ) ) {
 			wp_send_json_success(
 				array(
-					'message'  => __( 'The scan has stopped.', 'media-audit' ),
+					'message'  => __( 'The scan has stopped.', 'upload-sleuth' ),
 					'done'     => true,
 					'stopped'  => true,
 					'findings' => self::get_last_findings(),
@@ -569,7 +569,7 @@ class Media_Audit_Admin_Page {
 		delete_transient( $job_key );
 		wp_send_json_success(
 			array(
-				'message'  => __( 'Scan stopped. Partial findings saved.', 'media-audit' ),
+				'message'  => __( 'Scan stopped. Partial findings saved.', 'upload-sleuth' ),
 				'done'     => true,
 				'stopped'  => true,
 				'findings' => $findings,
@@ -604,7 +604,7 @@ class Media_Audit_Admin_Page {
 		self::save_integrity_state( $state );
 		wp_send_json_success(
 			array(
-				'message'   => 0 === $total ? __( 'The Media Library is empty.', 'media-audit' ) : __( 'Media Library check started.', 'media-audit' ),
+				'message'   => 0 === $total ? __( 'The Media Library is empty.', 'upload-sleuth' ) : __( 'Media Library check started.', 'upload-sleuth' ),
 				'done'      => 0 === $total,
 				'integrity' => self::normalize_integrity_state( $state ),
 			)
@@ -616,7 +616,7 @@ class Media_Audit_Admin_Page {
 		self::verify_ajax_request();
 		$state = self::get_integrity_state();
 		if ( empty( $state ) || ! empty( $state['completed'] ) ) {
-			wp_send_json_error( array( 'message' => __( 'No Media Library check is waiting to continue.', 'media-audit' ) ), 410 );
+			wp_send_json_error( array( 'message' => __( 'No Media Library check is waiting to continue.', 'upload-sleuth' ) ), 410 );
 		}
 
 		global $wpdb;
@@ -659,7 +659,7 @@ class Media_Audit_Admin_Page {
 
 		wp_send_json_success(
 			array(
-				'message'           => $done ? __( 'Media Library integrity check complete.', 'media-audit' ) : __( 'Media Library batch checked.', 'media-audit' ),
+				'message'           => $done ? __( 'Media Library integrity check complete.', 'upload-sleuth' ) : __( 'Media Library batch checked.', 'upload-sleuth' ),
 				'done'              => $done,
 				'progress'          => self::get_integrity_progress( $state ),
 				'missing_originals' => $new_missing_originals,
@@ -696,7 +696,7 @@ class Media_Audit_Admin_Page {
 			}
 		}
 		if ( empty( $ids ) ) {
-			wp_send_json_error( array( 'message' => __( 'No valid missing-file attachment records were selected.', 'media-audit' ) ), 400 );
+			wp_send_json_error( array( 'message' => __( 'No valid missing-file attachment records were selected.', 'upload-sleuth' ) ), 400 );
 		}
 
 		$rows              = array();
@@ -708,7 +708,7 @@ class Media_Audit_Admin_Page {
 			$post  = get_post( $attachment_id );
 			$title = isset( $saved['title'] ) ? (string) $saved['title'] : sprintf(
 				/* translators: %d: attachment post ID. */
-				__( 'Attachment #%d', 'media-audit' ),
+				__( 'Attachment #%d', 'upload-sleuth' ),
 				$attachment_id
 			);
 			if ( ! $post ) {
@@ -717,7 +717,7 @@ class Media_Audit_Admin_Page {
 					'id'      => $attachment_id,
 					'title'   => $title,
 					'action'  => 'already-removed',
-					'message' => __( 'The attachment record no longer exists.', 'media-audit' ),
+					'message' => __( 'The attachment record no longer exists.', 'upload-sleuth' ),
 				);
 				continue;
 			}
@@ -727,7 +727,7 @@ class Media_Audit_Admin_Page {
 					'id'      => $attachment_id,
 					'title'   => $title,
 					'action'  => 'blocked',
-					'message' => __( 'The record is no longer an attachment.', 'media-audit' ),
+					'message' => __( 'The record is no longer an attachment.', 'upload-sleuth' ),
 				);
 				continue;
 			}
@@ -740,7 +740,7 @@ class Media_Audit_Admin_Page {
 					'id'      => $attachment_id,
 					'title'   => $title,
 					'action'  => 'blocked',
-					'message' => __( 'Deletion blocked because the local original now exists.', 'media-audit' ),
+					'message' => __( 'Deletion blocked because the local original now exists.', 'upload-sleuth' ),
 				);
 				continue;
 			}
@@ -752,7 +752,7 @@ class Media_Audit_Admin_Page {
 					'id'      => $attachment_id,
 					'title'   => $title,
 					'action'  => 'failed',
-					'message' => __( 'WordPress could not delete the attachment record.', 'media-audit' ),
+					'message' => __( 'WordPress could not delete the attachment record.', 'upload-sleuth' ),
 				);
 				continue;
 			}
@@ -774,10 +774,10 @@ class Media_Audit_Admin_Page {
 				'message' => $files_left > 0
 					? sprintf(
 						/* translators: %d: number of known generated files still on disk. */
-						__( 'Attachment record deleted, but %d known companion file(s) remain on disk.', 'media-audit' ),
+						__( 'Attachment record deleted, but %d known companion file(s) remain on disk.', 'upload-sleuth' ),
 						$files_left
 					)
-					: __( 'Attachment record and known local companion files deleted through WordPress.', 'media-audit' ),
+					: __( 'Attachment record and known local companion files deleted through WordPress.', 'upload-sleuth' ),
 			);
 		}
 
@@ -812,7 +812,7 @@ class Media_Audit_Admin_Page {
 			array(
 				'message'     => sprintf(
 					/* translators: %d: number of processed attachment records. */
-					__( 'Processed %d attachment record(s).', 'media-audit' ),
+					__( 'Processed %d attachment record(s).', 'upload-sleuth' ),
 					count( $rows )
 				),
 				'rows'        => $rows,
@@ -835,19 +835,19 @@ class Media_Audit_Admin_Page {
 		$title    = get_the_title( $attachment_id );
 		$title    = '' !== trim( (string) $title ) ? (string) $title : sprintf(
 			/* translators: %d: attachment post ID. */
-			__( 'Untitled attachment #%d', 'media-audit' ),
+			__( 'Untitled attachment #%d', 'upload-sleuth' ),
 			$attachment_id
 		);
 		$base = array(
 			'id'    => (int) $attachment_id,
 			'title' => $title,
 			'mime'  => (string) get_post_mime_type( $attachment_id ),
-			'path'  => '' !== $attached ? wp_normalize_path( $attached ) : __( '(no attached file value)', 'media-audit' ),
+			'path'  => '' !== $attached ? wp_normalize_path( $attached ) : __( '(no attached file value)', 'upload-sleuth' ),
 		);
 
 		if ( '' === $attached || ! is_string( $original ) || '' === $original || ! is_file( $original ) ) {
 			$companions              = self::get_existing_attachment_files( $attachment_id );
-			$base['reason']          = '' === $attached ? __( 'Missing _wp_attached_file metadata.', 'media-audit' ) : __( 'Local original file is missing.', 'media-audit' );
+			$base['reason']          = '' === $attached ? __( 'Missing _wp_attached_file metadata.', 'upload-sleuth' ) : __( 'Local original file is missing.', 'upload-sleuth' );
 			$base['remaining_files'] = count( $companions );
 			$base['remaining_kb']    = round( array_sum( $companions ) / 1024, 1 );
 			return array(
@@ -945,7 +945,7 @@ class Media_Audit_Admin_Page {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by self::verify_ajax_request() above.
 		$action = isset( $_POST['target_action'] ) ? sanitize_key( wp_unslash( $_POST['target_action'] ) ) : '';
 		if ( ! in_array( $action, array( 'quarantine', 'backup-delete', 'delete' ), true ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid file action.', 'media-audit' ) ), 400 );
+			wp_send_json_error( array( 'message' => __( 'Invalid file action.', 'upload-sleuth' ) ), 400 );
 		}
 		$findings = self::get_last_findings();
 		$allowed  = array();
@@ -977,8 +977,8 @@ class Media_Audit_Admin_Page {
 		}
 		if ( empty( $paths ) ) {
 			$message = 'all' === $scope && empty( $allowed )
-				? __( 'The saved findings are empty or expired. Run a new scan before using Delete all.', 'media-audit' )
-				: __( 'No valid files were selected.', 'media-audit' );
+				? __( 'The saved findings are empty or expired. Run a new scan before using Delete all.', 'upload-sleuth' )
+				: __( 'No valid files were selected.', 'upload-sleuth' );
 			wp_send_json_error( array( 'message' => $message ), 400 );
 		}
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by self::verify_ajax_request() above.
@@ -1030,7 +1030,7 @@ class Media_Audit_Admin_Page {
 		}
 		wp_send_json_success(
 			array(
-				'message'       => __( 'File action complete.', 'media-audit' ),
+				'message'       => __( 'File action complete.', 'upload-sleuth' ),
 				'rows'          => $rows,
 				'removed_paths' => array_keys( isset( $changed ) ? $changed : array() ),
 				'download_url'  => $download_url,
@@ -1048,18 +1048,18 @@ class Media_Audit_Admin_Page {
 	 */
 	public static function download_backup() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You are not allowed to download this backup.', 'media-audit' ), '', array( 'response' => 403 ) );
+			wp_die( esc_html__( 'You are not allowed to download this backup.', 'upload-sleuth' ), '', array( 'response' => 403 ) );
 		}
 		$token = isset( $_GET['token'] ) ? sanitize_key( wp_unslash( $_GET['token'] ) ) : '';
 		if ( '' === $token || ! check_admin_referer( 'media_audit_download_' . $token ) ) {
-			wp_die( esc_html__( 'The backup download link is invalid or expired.', 'media-audit' ), '', array( 'response' => 403 ) );
+			wp_die( esc_html__( 'The backup download link is invalid or expired.', 'upload-sleuth' ), '', array( 'response' => 403 ) );
 		}
 		$key      = 'media_audit_download_' . get_current_user_id() . '_' . $token;
 		$download = get_transient( $key );
 		$path     = is_array( $download ) && isset( $download['path'] ) ? wp_normalize_path( (string) $download['path'] ) : '';
-		$name     = is_array( $download ) && isset( $download['name'] ) ? sanitize_file_name( (string) $download['name'] ) : 'media-audit-backup.zip';
+		$name     = is_array( $download ) && isset( $download['name'] ) ? sanitize_file_name( (string) $download['name'] ) : 'upload-sleuth-backup.zip';
 		if ( '' === $path || ! is_file( $path ) || ! is_readable( $path ) ) {
-			wp_die( esc_html__( 'The backup archive is no longer available.', 'media-audit' ), '', array( 'response' => 404 ) );
+			wp_die( esc_html__( 'The backup archive is no longer available.', 'upload-sleuth' ), '', array( 'response' => 404 ) );
 		}
 
 		delete_transient( $key );
@@ -1078,7 +1078,7 @@ class Media_Audit_Admin_Page {
 	public static function ajax_clear_findings() {
 		self::verify_ajax_request();
 		self::delete_saved_findings();
-		wp_send_json_success( array( 'message' => __( 'Saved results cleared.', 'media-audit' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Saved results cleared.', 'upload-sleuth' ) ) );
 	}
 
 	/** Return recoverable files from timestamped quarantine runs. */
@@ -1094,25 +1094,33 @@ class Media_Audit_Admin_Page {
 		$quarantine_path = isset( $_POST['quarantine_path'] ) ? self::sanitize_relative_path( sanitize_text_field( wp_unslash( $_POST['quarantine_path'] ) ) ) : '';
 		$parts           = '' !== $quarantine_path ? explode( '/', $quarantine_path, 2 ) : array();
 		if ( 2 !== count( $parts ) || 'backups' === $parts[0] ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid quarantine path.', 'media-audit' ) ), 400 );
+			wp_send_json_error( array( 'message' => __( 'Invalid quarantine path.', 'upload-sleuth' ) ), 400 );
 		}
-		$original    = self::sanitize_relative_path( $parts[1] );
+		$stored_path = $parts[1];
+		if ( '.uploadsleuth' === substr( $stored_path, -13 ) ) {
+			$stored_path = substr( $stored_path, 0, -13 );
+		}
+		$original    = self::sanitize_relative_path( $stored_path );
 		$locations   = self::get_quarantine_locations();
 		$source      = $locations['root'] . '/' . $quarantine_path;
 		$destination = $locations['uploads'] . '/' . $original;
-		if ( '' === $original || ! is_file( $source ) || is_link( $source ) ) {
-			wp_send_json_error( array( 'message' => __( 'The quarantined file no longer exists.', 'media-audit' ) ), 404 );
+		$file_type   = '' !== $original ? wp_check_filetype( $original ) : array();
+		if ( '' === $original || empty( $file_type['type'] ) ) {
+			wp_send_json_error( array( 'message' => __( 'Only recognised WordPress media files can be restored.', 'upload-sleuth' ) ), 400 );
+		}
+		if ( ! is_file( $source ) || is_link( $source ) ) {
+			wp_send_json_error( array( 'message' => __( 'The quarantined file no longer exists.', 'upload-sleuth' ) ), 404 );
 		}
 		if ( file_exists( $destination ) ) {
-			wp_send_json_error( array( 'message' => __( 'Restore blocked because a file already exists at the original path.', 'media-audit' ) ), 409 );
+			wp_send_json_error( array( 'message' => __( 'Restore blocked because a file already exists at the original path.', 'upload-sleuth' ) ), 409 );
 		}
 		if ( ! is_dir( dirname( $destination ) ) && ! wp_mkdir_p( dirname( $destination ) ) ) {
-			wp_send_json_error( array( 'message' => __( 'Could not recreate the original directory.', 'media-audit' ) ), 500 );
+			wp_send_json_error( array( 'message' => __( 'Could not recreate the original directory.', 'upload-sleuth' ) ), 500 );
 		}
 		// A same-filesystem rename is atomic and restore must not trigger a credentials prompt.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Source and destination are validated paths beneath uploads.
 		if ( ! rename( $source, $destination ) ) {
-			wp_send_json_error( array( 'message' => __( 'The file could not be restored.', 'media-audit' ) ), 500 );
+			wp_send_json_error( array( 'message' => __( 'The file could not be restored.', 'upload-sleuth' ) ), 500 );
 		}
 		do_action( 'media_audit_file_restored', $source, $destination, $original );
 		$stats = self::get_cleanup_stats();
@@ -1120,7 +1128,7 @@ class Media_Audit_Admin_Page {
 		update_option( self::STATS_OPTION, $stats, false );
 		wp_send_json_success(
 			array(
-				'message' => __( 'File restored to its original uploads path.', 'media-audit' ),
+				'message' => __( 'File restored to its original uploads path.', 'upload-sleuth' ),
 				'files'   => self::get_quarantined_files(),
 				'stats'   => $stats,
 			)
@@ -1163,11 +1171,11 @@ class Media_Audit_Admin_Page {
 			}
 		}
 		if ( 0 === $deleted && 0 === $failed ) {
-			wp_send_json_error( array( 'message' => __( 'No matching quarantined files were found.', 'media-audit' ) ), 404 );
+			wp_send_json_error( array( 'message' => __( 'No matching quarantined files were found.', 'upload-sleuth' ) ), 404 );
 		}
 		$message = sprintf(
 			/* translators: 1: deleted count, 2: failed count. */
-			__( 'Deleted %1$d quarantined file(s); %2$d failed.', 'media-audit' ),
+			__( 'Deleted %1$d quarantined file(s); %2$d failed.', 'upload-sleuth' ),
 			$deleted,
 			$failed
 		);
@@ -1189,10 +1197,7 @@ class Media_Audit_Admin_Page {
 		$uploads        = wp_get_upload_dir();
 		$uploads_dir    = ! empty( $uploads['basedir'] ) ? untrailingslashit( wp_normalize_path( (string) $uploads['basedir'] ) ) : '';
 		$settings       = self::get_settings();
-		$quarantine_dir = self::sanitize_relative_path( (string) $settings['quarantine_dir'] );
-		if ( '' === $quarantine_dir ) {
-			$quarantine_dir = '.media-audit-quarantine';
-		}
+		$quarantine_dir = self::normalize_storage_directory( (string) $settings['quarantine_dir'] );
 		return array(
 			'uploads' => $uploads_dir,
 			'root'    => $uploads_dir . '/' . $quarantine_dir,
@@ -1200,7 +1205,7 @@ class Media_Audit_Admin_Page {
 	}
 
 	/**
-	 * Inventory quarantined files while excluding ZIP/CLI backups.
+	 * Inventory quarantined files while excluding backup ZIPs.
 	 *
 	 * @param int $limit Maximum rows, or zero for the complete inventory.
 	 * @return array<int,array<string,mixed>>
@@ -1221,7 +1226,11 @@ class Media_Audit_Admin_Page {
 			if ( 2 !== count( $parts ) || 'backups' === $parts[0] ) {
 				continue;
 			}
-			$original = self::sanitize_relative_path( $parts[1] );
+			$stored_path = $parts[1];
+			if ( '.uploadsleuth' === substr( $stored_path, -13 ) ) {
+				$stored_path = substr( $stored_path, 0, -13 );
+			}
+			$original = self::sanitize_relative_path( $stored_path );
 			if ( '' === $original ) {
 				continue;
 			}
@@ -1276,7 +1285,7 @@ class Media_Audit_Admin_Page {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by the calling AJAX endpoint.
 		$token = isset( $_POST['token'] ) ? sanitize_key( wp_unslash( $_POST['token'] ) ) : '';
 		if ( '' === $token || strlen( $token ) > 40 ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid scan token.', 'media-audit' ) ), 400 );
+			wp_send_json_error( array( 'message' => __( 'Invalid scan token.', 'upload-sleuth' ) ), 400 );
 		}
 		return $token;
 	}
@@ -1304,7 +1313,7 @@ class Media_Audit_Admin_Page {
 	/** Require administrator capability and the shared AJAX nonce. */
 	private static function verify_ajax_request() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You are not allowed to manage media audits.', 'media-audit' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to manage media audits.', 'upload-sleuth' ) ), 403 );
 		}
 		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
 	}
@@ -1464,6 +1473,23 @@ class Media_Audit_Admin_Page {
 		$state = self::normalize_integrity_state( $state );
 		unset( $state['missing_originals'], $state['missing_variants'] );
 		return $state;
+	}
+
+	/**
+	 * Keep configured runtime storage below the plugin's uploads directory.
+	 *
+	 * @param mixed $directory Requested relative directory.
+	 * @return string Safe directory relative to uploads.
+	 */
+	private static function normalize_storage_directory( $directory ) {
+		$directory = self::sanitize_relative_path( $directory );
+		if ( '' === $directory || 'upload-sleuth' === $directory ) {
+			return 'upload-sleuth';
+		}
+		if ( 0 === strpos( $directory, 'upload-sleuth/' ) ) {
+			return $directory;
+		}
+		return 'upload-sleuth/' . $directory;
 	}
 
 	/**

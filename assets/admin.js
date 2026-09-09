@@ -534,7 +534,7 @@
 		}
 		const link = document.createElement( 'a' );
 		link.href = url;
-		link.download = filename || 'media-audit-backup.zip';
+		link.download = filename || 'upload-sleuth-backup.zip';
 		link.setAttribute( 'aria-hidden', 'true' );
 		link.style.position = 'fixed';
 		link.style.width = '1px';

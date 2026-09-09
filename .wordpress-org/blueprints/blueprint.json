@@ -1,6 +1,6 @@
 {
 	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
-	"landingPage": "/wp-admin/tools.php?page=media-audit",
+	"landingPage": "/wp-admin/tools.php?page=upload-sleuth",
 	"preferredVersions": {
 		"php": "8.2",
 		"wp": "latest"
@@ -9,7 +9,7 @@
 	"plugins": [
 		{
 			"resource": "wordpress.org/plugins",
-			"slug": "media-audit"
+			"slug": "upload-sleuth"
 		}
 	],
 	"steps": [
