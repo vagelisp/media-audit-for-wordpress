@@ -103,6 +103,13 @@ Yes. The Library integrity tab checks attachment records in batches. It reports 
 
 Sites using S3, CDN, or another media-offload plugin require special care. A valid remote attachment may intentionally have no local file, so confirm the remote object and offload configuration before deleting a reported record.
 
+== More from the developer ==
+
+UploadSleuth is maintained by the same developer behind [Notificator – Alerts & Notifications](https://wordpress.org/plugins/notificator/), a WordPress plugin for turning site events into dashboard alerts and optional mobile or MQTT notifications.
+
+* [Notificator on WordPress.org](https://wordpress.org/plugins/notificator/)
+* [UploadSleuth source code on GitHub](https://github.com/vagelisp/upload-sleuth)
+
 == WP-CLI Examples ==
 
 `wp upload-sleuth`
