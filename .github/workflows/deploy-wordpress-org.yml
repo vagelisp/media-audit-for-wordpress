@@ -8,6 +8,11 @@ on:
         required: true
         default: true
         type: boolean
+      tag_release:
+        description: Create the version tag after committing trunk and assets
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -58,6 +63,7 @@ jobs:
         id: svn
         env:
           DRY_RUN: ${{ inputs.dry_run }}
+          TAG_RELEASE: ${{ inputs.tag_release }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
@@ -116,9 +122,13 @@ jobs:
             --no-auth-cache \
             --message "Deploy UploadSleuth ${RELEASE_VERSION}"
 
-          svn copy "${SVN_URL}/trunk" "${SVN_URL}/tags/${RELEASE_VERSION}" \
-            --username "${SVN_USERNAME}" \
-            --password "${SVN_PASSWORD}" \
-            --non-interactive \
-            --no-auth-cache \
-            --message "Tag UploadSleuth ${RELEASE_VERSION}"
+          if [[ "${TAG_RELEASE}" == "true" ]]; then
+            svn copy "${SVN_URL}/trunk" "${SVN_URL}/tags/${RELEASE_VERSION}" \
+              --username "${SVN_USERNAME}" \
+              --password "${SVN_PASSWORD}" \
+              --non-interactive \
+              --no-auth-cache \
+              --message "Tag UploadSleuth ${RELEASE_VERSION}"
+          else
+            echo "Tagging disabled; trunk and assets were deployed only."
+          fi
