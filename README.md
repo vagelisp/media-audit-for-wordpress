@@ -247,6 +247,12 @@ The workflow refuses mismatched versions, missing release notes, and existing ta
 
 The repository also includes a WordPress Playground Blueprint at `.wordpress-org/blueprints/blueprint.json`. After the plugin is approved and its WordPress.org SVN repository is available, run **Actions → Sync WordPress.org Playground Blueprint** with a dry run first, then run it again with dry run disabled. Store the SVN credentials as the `SVN_USERNAME` and `SVN_PASSWORD` secrets in the `wordpress-org` environment. The release package excludes `.wordpress-org` because these assets belong in the WordPress.org SVN `assets` directory, not in the plugin ZIP.
 
+### Deploying to WordPress.org SVN
+
+The **Deploy UploadSleuth to WordPress.org** workflow synchronizes the committed plugin source to `trunk`, publishes the directory icon and banners from `.wordpress-org/assets/`, and creates a matching version tag under `tags/`. It uses the approved repository at `https://plugins.svn.wordpress.org/upload-sleuth`.
+
+Create a GitHub environment named `wordpress-org` with `SVN_USERNAME` and `SVN_PASSWORD` secrets. Run the workflow with its default dry run first and inspect the SVN diff. Run it again with dry run disabled only after the diff is correct. The workflow derives the version from `upload-sleuth.php` and `readme.txt`, so update both before each deployment.
+
 ## Changelog
 
 ### 1.0.2
