@@ -89,8 +89,14 @@ jobs:
             [[ -n "${missing_path}" ]] && svn delete --force "${missing_path}"
           done < <(svn status "${SVN_DIR}/trunk" "${SVN_DIR}/assets" | sed -n 's/^!       //p')
 
+          changes="$(svn status "${SVN_DIR}/trunk" "${SVN_DIR}/assets")"
+          if [[ -z "${changes}" ]]; then
+            echo "WordPress.org SVN already matches the committed source and assets."
+            exit 0
+          fi
+
           echo "SVN changes:"
-          svn status "${SVN_DIR}/trunk" "${SVN_DIR}/assets"
+          printf '%s\n' "${changes}"
           svn diff "${SVN_DIR}/trunk" "${SVN_DIR}/assets"
 
           if [[ "${DRY_RUN}" == "true" ]]; then
