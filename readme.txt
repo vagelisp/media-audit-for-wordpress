@@ -41,6 +41,8 @@ Files without a detected reference are shown as likely stray candidates. They ar
 
 A file can be referenced by an external system, theme or plugin code, encoded data, a custom database, or another location the plugin cannot inspect. Make a verified backup and test quarantined files before deleting anything permanently.
 
+UploadSleuth is maintained by the same developer behind [Notificator – Alerts & Notifications](https://wordpress.org/plugins/notificator/), a WordPress plugin for turning site events into dashboard alerts and optional mobile or MQTT notifications. [Browse the UploadSleuth source code on GitHub](https://github.com/vagelisp/upload-sleuth).
+
 == Installation ==
 
 1. Upload the `upload-sleuth` directory to `/wp-content/plugins/`.
@@ -102,13 +104,6 @@ No. Scanning and file operations run locally within WordPress.
 Yes. The Library integrity tab checks attachment records in batches. It reports missing local originals and, separately, generated sizes that are absent while the original exists. Missing-original records can be deleted individually or all at once after confirmation; cleanup uses WordPress `wp_delete_attachment()` rather than direct database queries.
 
 Sites using S3, CDN, or another media-offload plugin require special care. A valid remote attachment may intentionally have no local file, so confirm the remote object and offload configuration before deleting a reported record.
-
-== More from the developer ==
-
-UploadSleuth is maintained by the same developer behind [Notificator – Alerts & Notifications](https://wordpress.org/plugins/notificator/), a WordPress plugin for turning site events into dashboard alerts and optional mobile or MQTT notifications.
-
-* [Notificator on WordPress.org](https://wordpress.org/plugins/notificator/)
-* [UploadSleuth source code on GitHub](https://github.com/vagelisp/upload-sleuth)
 
 == WP-CLI Examples ==
 
